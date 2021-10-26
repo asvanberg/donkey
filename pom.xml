@@ -109,6 +109,11 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.3.1</version>
+                <configuration>
+                    <links>
+                        <link>https://javadoc.io/doc/jakarta.json.bind/jakarta.json.bind-api/2.0.0</link>
+                    </links>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
