@@ -1,5 +1,6 @@
 package io.github.asvanberg.donkey.test;
 
+import io.github.asvanberg.donkey.exceptions.MissingExplicitJsonbPropertyValueException;
 import io.github.asvanberg.donkey.exceptions.MissingJsonbPropertyOnJsonbCreatorParameterException;
 import io.github.asvanberg.donkey.exceptions.NoJsonbCreatorException;
 import jakarta.json.bind.annotation.JsonbCreator;
@@ -64,6 +65,24 @@ public class JsonbCreatorTest extends DefaultConfigurationTest {
             jsonb.fromJson(json, MissingJsonbProperty.class);
             fail("Should throw exception requiring JsonbProperty annotation");
         } catch (MissingJsonbPropertyOnJsonbCreatorParameterException expected) {
+        }
+    }
+
+    public static record MissingJsonbPropertyValue(@JsonbProperty int x) {
+        @JsonbCreator
+        public MissingJsonbPropertyValue {}
+    }
+
+    @Test
+    public void parameters_require_explicit_jsonb_property_value() {
+        String json = """
+                { "x": 1
+                }
+                """;
+        try {
+            jsonb.fromJson(json, MissingJsonbPropertyValue.class);
+            fail("Should throw exception requiring explicit JsonbProperty annotation value()");
+        } catch (MissingExplicitJsonbPropertyValueException expected) {
         }
     }
 }

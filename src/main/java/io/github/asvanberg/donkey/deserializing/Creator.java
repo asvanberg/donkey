@@ -1,9 +1,9 @@
 package io.github.asvanberg.donkey.deserializing;
 
 import io.github.asvanberg.donkey.exceptions.InternalProcessingException;
+import io.github.asvanberg.donkey.exceptions.MissingExplicitJsonbPropertyValueException;
 import io.github.asvanberg.donkey.exceptions.MissingJsonbPropertyOnJsonbCreatorParameterException;
 import io.github.asvanberg.donkey.exceptions.NoJsonbCreatorException;
-import jakarta.json.bind.JsonbException;
 import jakarta.json.bind.annotation.JsonbCreator;
 import jakarta.json.bind.annotation.JsonbProperty;
 
@@ -44,10 +44,11 @@ abstract class Creator<T> {
             if (jsonbProperty == null) {
                 throw new MissingJsonbPropertyOnJsonbCreatorParameterException(parameter, executable);
             }
-            if (jsonbProperty.value() == null || jsonbProperty.value().isBlank()) {
-                throw new JsonbException("JsonbProperty annotation is missing value() defining the JSON attribute name");
+            final String propertyName = jsonbProperty.value();
+            if (propertyName.isBlank()) {
+                throw new MissingExplicitJsonbPropertyValueException(parameter, executable);
             }
-            creationParameters.put(jsonbProperty.value(), new Parameter(parameter.getParameterizedType(), i));
+            creationParameters.put(propertyName, new Parameter(parameter.getParameterizedType(), i));
         }
         return creationParameters;
     }
