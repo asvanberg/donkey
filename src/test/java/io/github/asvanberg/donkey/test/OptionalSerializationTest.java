@@ -10,19 +10,19 @@ import java.util.OptionalInt;
 import java.util.OptionalLong;
 
 import static io.github.asvanberg.donkey.test.JsonValueAssert.assertThat;
+import static io.github.asvanberg.donkey.test.SerializationUtils.assertParsedJson;
 
 public class OptionalSerializationTest extends DefaultConfigurationTest {
-    public record IntContainer(@JsonbProperty("age") OptionalInt age)
-    {
+    public record IntContainer(@JsonbProperty("age") OptionalInt age) {
     }
 
     @Test
     public void non_nillable_empty_optional_int()
     {
         final String json = jsonb.toJson(new IntContainer(OptionalInt.empty()));
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .isEmpty());
+        assertParsedJson(json)
+                .isObject()
+                .isEmpty();
     }
 
     @Test
@@ -30,41 +30,39 @@ public class OptionalSerializationTest extends DefaultConfigurationTest {
     {
         final int value = 3;
         final String json = jsonb.toJson(new IntContainer(OptionalInt.of(value)));
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .hasEntrySatisfying("age", property ->
-                                 assertThat(property)
-                                         .isNumber()
-                                         .extracting(JsonNumber::intValue)
-                                         .isEqualTo(value)));
+        assertParsedJson(json)
+                .isObject()
+                .hasEntrySatisfying("age", property ->
+                        assertThat(property)
+                                .isNumber()
+                                .extracting(JsonNumber::intValue)
+                                .isEqualTo(value));
     }
 
-    public record NillableIntContainer(@JsonbProperty(value = "age", nillable = true) OptionalInt age)
-    {
+    public record NillableIntContainer(@JsonbProperty(value = "age", nillable = true) OptionalInt age) {
     }
 
     @Test
     public void nillable_empty_optional_int()
     {
         final String json = jsonb.toJson(new NillableIntContainer(OptionalInt.empty()));
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .hasEntrySatisfying("age", property ->
-                                 assertThat(property)
-                                         .isNull()));
+        assertParsedJson(json)
+                .isObject()
+                .hasEntrySatisfying("age", property ->
+                        assertThat(property)
+                                .isNull());
     }
 
-    public record LongContainer(@JsonbProperty("length") OptionalLong length)
-    {
+    public record LongContainer(@JsonbProperty("length") OptionalLong length) {
     }
 
     @Test
     public void non_nillable_empty_optional_long()
     {
         final String json = jsonb.toJson(new LongContainer(OptionalLong.empty()));
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .isEmpty());
+        assertParsedJson(json)
+                .isObject()
+                .isEmpty();
     }
 
     @Test
@@ -72,41 +70,39 @@ public class OptionalSerializationTest extends DefaultConfigurationTest {
     {
         final long value = 3;
         final String json = jsonb.toJson(new LongContainer(OptionalLong.of(value)));
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .hasEntrySatisfying("length", property ->
-                                 assertThat(property)
-                                         .isNumber()
-                                         .extracting(JsonNumber::longValue)
-                                         .isEqualTo(value)));
+        assertParsedJson(json)
+                .isObject()
+                .hasEntrySatisfying("length", property ->
+                        assertThat(property)
+                                .isNumber()
+                                .extracting(JsonNumber::longValue)
+                                .isEqualTo(value));
     }
 
-    public record NillableLongContainer(@JsonbProperty(value = "length", nillable = true) OptionalLong length)
-    {
+    public record NillableLongContainer(@JsonbProperty(value = "length", nillable = true) OptionalLong length) {
     }
 
     @Test
     public void nillable_empty_optional_long()
     {
         final String json = jsonb.toJson(new NillableLongContainer(OptionalLong.empty()));
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .hasEntrySatisfying("length", property ->
-                                 assertThat(property)
-                                         .isNull()));
+        assertParsedJson(json)
+                .isObject()
+                .hasEntrySatisfying("length", property ->
+                        assertThat(property)
+                                .isNull());
     }
 
-    public record DoubleContainer(@JsonbProperty("temperature") OptionalDouble temperature)
-    {
+    public record DoubleContainer(@JsonbProperty("temperature") OptionalDouble temperature) {
     }
 
     @Test
     public void non_nillable_empty_optional_double()
     {
         final String json = jsonb.toJson(new DoubleContainer(OptionalDouble.empty()));
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .isEmpty());
+        assertParsedJson(json)
+                .isObject()
+                .isEmpty();
     }
 
     @Test
@@ -114,13 +110,13 @@ public class OptionalSerializationTest extends DefaultConfigurationTest {
     {
         final double value = 3.14d;
         final String json = jsonb.toJson(new DoubleContainer(OptionalDouble.of(value)));
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .hasEntrySatisfying("temperature", property ->
-                                 assertThat(property)
-                                         .isNumber()
-                                         .extracting(JsonNumber::doubleValue)
-                                         .isEqualTo(value)));
+        assertParsedJson(json)
+                .isObject()
+                .hasEntrySatisfying("temperature", property ->
+                        assertThat(property)
+                                .isNumber()
+                                .extracting(JsonNumber::doubleValue)
+                                .isEqualTo(value));
     }
 
     public record NillableDoubleContainer(
@@ -132,24 +128,23 @@ public class OptionalSerializationTest extends DefaultConfigurationTest {
     public void nillable_empty_optional_double()
     {
         final String json = jsonb.toJson(new NillableDoubleContainer(OptionalDouble.empty()));
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .hasEntrySatisfying("temperature", property ->
-                                 assertThat(property)
-                                         .isNull()));
+        assertParsedJson(json)
+                .isObject()
+                .hasEntrySatisfying("temperature", property ->
+                        assertThat(property)
+                                .isNull());
     }
 
-    public record OptionalContainer(@JsonbProperty(value = "name") Optional<String> name)
-    {
+    public record OptionalContainer(@JsonbProperty(value = "name") Optional<String> name) {
     }
 
     @Test
     public void non_nillable_empty_optional()
     {
         final String json = jsonb.toJson(new OptionalContainer(Optional.empty()));
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .isEmpty());
+        assertParsedJson(json)
+                .isObject()
+                .isEmpty();
     }
 
     @Test
@@ -157,26 +152,25 @@ public class OptionalSerializationTest extends DefaultConfigurationTest {
     {
         final String value = "Bob";
         final String json = jsonb.toJson(new OptionalContainer(Optional.of(value)));
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .hasEntrySatisfying("name", property ->
-                                 assertThat(property)
-                                         .isString()
-                                         .isEqualTo(value)));
+        assertParsedJson(json)
+                .isObject()
+                .hasEntrySatisfying("name", property ->
+                        assertThat(property)
+                                .isString()
+                                .isEqualTo(value));
     }
 
-    public record NillableOptionalContainer(@JsonbProperty(value = "name", nillable = true) Optional<String> name)
-    {
+    public record NillableOptionalContainer(@JsonbProperty(value = "name", nillable = true) Optional<String> name) {
     }
 
     @Test
     public void nillable_empty_optional()
     {
         final String json = jsonb.toJson(new NillableOptionalContainer(Optional.empty()));
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .hasEntrySatisfying("name", property ->
-                                 assertThat(property)
-                                         .isNull()));
+        assertParsedJson(json)
+                .isObject()
+                .hasEntrySatisfying("name", property ->
+                        assertThat(property)
+                                .isNull());
     }
 }

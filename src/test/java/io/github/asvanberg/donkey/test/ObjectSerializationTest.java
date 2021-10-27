@@ -10,6 +10,7 @@ import jakarta.json.stream.JsonGenerator;
 import org.junit.jupiter.api.Test;
 
 import static io.github.asvanberg.donkey.test.JsonValueAssert.assertThat;
+import static io.github.asvanberg.donkey.test.SerializationUtils.assertParsedJson;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ObjectSerializationTest extends DefaultConfigurationTest {
@@ -19,26 +20,25 @@ public class ObjectSerializationTest extends DefaultConfigurationTest {
     {
         final var bob = new Person("Bob", "Builder", 17, false);
         final String jsonString = jsonb.toJson(bob);
-        SerializationUtils.assertParsedJson(jsonString, jsonValue ->
-                jsonValue
-                        .isObject()
-                        .hasEntrySatisfying("first_name", property ->
-                                assertThat(property)
-                                        .isString()
-                                        .isEqualTo(bob.firstName()))
-                        .hasEntrySatisfying("last_name", property ->
-                                assertThat(property)
-                                        .isString()
-                                        .isEqualTo(bob.lastName()))
-                        .hasEntrySatisfying("age", property ->
-                                assertThat(property)
-                                        .isNumber()
-                                        .extracting(JsonNumber::intValue)
-                                        .isEqualTo(bob.age()))
-                        .hasEntrySatisfying("deceased", property ->
-                                assertThat(property)
-                                        .isBoolean()
-                                        .isEqualTo(bob.deceased())));
+        assertParsedJson(jsonString)
+                .isObject()
+                .hasEntrySatisfying("first_name", property ->
+                        assertThat(property)
+                                .isString()
+                                .isEqualTo(bob.firstName()))
+                .hasEntrySatisfying("last_name", property ->
+                        assertThat(property)
+                                .isString()
+                                .isEqualTo(bob.lastName()))
+                .hasEntrySatisfying("age", property ->
+                        assertThat(property)
+                                .isNumber()
+                                .extracting(JsonNumber::intValue)
+                                .isEqualTo(bob.age()))
+                .hasEntrySatisfying("deceased", property ->
+                        assertThat(property)
+                                .isBoolean()
+                                .isEqualTo(bob.deceased()));
     }
 
     public static record Person(
@@ -54,9 +54,9 @@ public class ObjectSerializationTest extends DefaultConfigurationTest {
     {
         final var bob = new NoAnnotation("Bob", 5);
         final String json = jsonb.toJson(bob);
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .doesNotContainKey("name"));
+        assertParsedJson(json)
+                .isObject()
+                .doesNotContainKey("name");
     }
 
     public static record NoAnnotation(String name, @JsonbProperty("age") int age) {
@@ -90,11 +90,11 @@ public class ObjectSerializationTest extends DefaultConfigurationTest {
         final String str = "A string that is not a palindrome";
         final var bob = new SpecificSerializer(str);
         final String json = jsonb.toJson(bob);
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .hasEntrySatisfying("name", property ->
-                                 assertThat(property).isString()
-                                                     .isEqualTo(reverse(str))));
+        assertParsedJson(json)
+                .isObject()
+                .hasEntrySatisfying("name", property ->
+                        assertThat(property).isString()
+                                            .isEqualTo(reverse(str)));
     }
 
     public static record SpecificSerializer(

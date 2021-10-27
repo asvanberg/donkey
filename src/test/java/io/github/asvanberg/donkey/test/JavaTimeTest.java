@@ -14,9 +14,9 @@ public class JavaTimeTest extends DefaultConfigurationTest {
         final Instant now = Instant.now();
         final String expected = DateTimeFormatter.ISO_INSTANT.format(now);
         final String json = jsonb.toJson(now);
-        assertParsedJson(json, jsonValueAssert ->
-                jsonValueAssert.isString()
-                               .isEqualTo(expected));
+        assertParsedJson(json)
+                .isString()
+                .isEqualTo(expected);
     }
 
     @Test
@@ -24,8 +24,8 @@ public class JavaTimeTest extends DefaultConfigurationTest {
         final OffsetDateTime now = OffsetDateTime.now();
         final String expected = DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(now);
         final String json = jsonb.toJson(now);
-        assertParsedJson(json, jsonValueAssert ->
-                jsonValueAssert.isString()
-                               .isEqualTo(expected));
+        assertParsedJson(json)
+                .isString()
+                .isEqualTo(expected);
     }
 }

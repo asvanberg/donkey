@@ -16,11 +16,11 @@ public class CollectionSerializationTest extends DefaultConfigurationTest {
     {
         final List<String> list = List.of("foo", "bar");
         final String json = jsonb.toJson(list);
-        assertParsedJson(json, jsonValue ->
-                jsonValue.isArray()
-                         .extracting(JsonString.class::cast)
-                         .extracting(JsonString::getString)
-                         .containsExactlyElementsOf(List.of("foo", "bar")));
+        assertParsedJson(json)
+                .isArray()
+                .extracting(JsonString.class::cast)
+                .extracting(JsonString::getString)
+                .containsExactlyElementsOf(List.of("foo", "bar"));
     }
 
     @Test
@@ -28,13 +28,13 @@ public class CollectionSerializationTest extends DefaultConfigurationTest {
     {
         final Map<String, String> map = Map.of("first_name", "Bob", "last_name", "Example");
         final String json = jsonb.toJson(map);
-        assertParsedJson(json, jsonValue ->
-                jsonValue.isObject()
-                         .hasEntrySatisfying("first_name", property ->
-                                 assertThat(property).isString()
-                                                     .isEqualTo("Bob"))
-                         .hasEntrySatisfying("last_name", property ->
-                                 assertThat(property).isString()
-                                                     .isEqualTo("Example")));
+        assertParsedJson(json)
+                .isObject()
+                .hasEntrySatisfying("first_name", property ->
+                        assertThat(property).isString()
+                                            .isEqualTo("Bob"))
+                .hasEntrySatisfying("last_name", property ->
+                        assertThat(property).isString()
+                                            .isEqualTo("Example"));
     }
 }

@@ -3,12 +3,9 @@ package io.github.asvanberg.donkey.test;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.spi.JsonbProvider;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static io.github.asvanberg.donkey.test.SerializationUtils.assertParsedJson;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class JsonbConfigTest {
     private static final String PREFIX = "prefix";
@@ -19,9 +16,9 @@ public class JsonbConfigTest {
     {
         try (Jsonb jsonb = initDonkey()) {
             final String json = jsonb.toJson("simple");
-            assertParsedJson(json, jsonValue ->
-                    jsonValue.isString()
-                             .startsWith(PREFIX));
+            assertParsedJson(json)
+                    .isString()
+                    .startsWith(PREFIX);
         }
     }
 

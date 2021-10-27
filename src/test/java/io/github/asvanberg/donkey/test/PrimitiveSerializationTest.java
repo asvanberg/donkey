@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import static io.github.asvanberg.donkey.test.SerializationUtils.assertParsedJson;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PrimitiveSerializationTest extends DefaultConfigurationTest {
@@ -14,8 +15,9 @@ public class PrimitiveSerializationTest extends DefaultConfigurationTest {
     @Test
     public void string() {
         final String json = jsonb.toJson("hello");
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isString().isEqualTo("hello"));
+        assertParsedJson(json)
+                .isString()
+                .isEqualTo("hello");
     }
 
     @Test
@@ -45,26 +47,26 @@ public class PrimitiveSerializationTest extends DefaultConfigurationTest {
     @Test
     public void boolean_() {
         final String json = jsonb.toJson(true);
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isBoolean().isEqualTo(true));
+        assertParsedJson(json)
+                .isBoolean()
+                .isEqualTo(true);
     }
 
     @Test
     public void double_() {
         final double v = 3.14d;
         final String json = jsonb.toJson(v);
-        SerializationUtils.assertParsedJson(json, jsonValue->
-                jsonValue
-                        .isNumber()
-                        .extracting(JsonNumber::doubleValue)
-                        .isEqualTo(v));
+        assertParsedJson(json)
+                .isNumber()
+                .extracting(JsonNumber::doubleValue)
+                .isEqualTo(v);
     }
 
     @Test
     public void json_value() {
         final JsonValue value = JsonValue.TRUE;
         final String json = jsonb.toJson(value);
-        SerializationUtils.assertParsedJson(json, jsonValue ->
-                jsonValue.isEqualTo(value));
+        assertParsedJson(json)
+                .isEqualTo(value);
     }
 }
