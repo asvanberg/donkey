@@ -24,6 +24,8 @@ public class Deserializer {
     public Deserializer(final JsonbConfig config) {
         deserializers.put(Integer.class, IntDeserializer::new);
         deserializers.put(int.class, IntDeserializer::new);
+        deserializers.put(Float.class, FloatDeserializer::new);
+        deserializers.put(float.class, FloatDeserializer::new);
         deserializers.put(String.class, StringDeserializer::new);
         deserializers.put(long.class, LongDeserializer::new);
         deserializers.put(boolean.class, BooleanDeserializer::new);

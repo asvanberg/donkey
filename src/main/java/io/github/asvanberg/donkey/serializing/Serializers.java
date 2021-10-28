@@ -52,6 +52,7 @@ public class Serializers
         register(LongSerializer.INSTANCE, Long.class, Priority.BUILT_IN);
         register(CollectionSerializer.INSTANCE, Collection.class, Priority.BUILT_IN);
         register(DoubleSerializer.INSTANCE, Double.class, Priority.BUILT_IN);
+        register(FloatSerializer.INSTANCE, Float.class, Priority.BUILT_IN);
         register(JsonValueSerializer.INSTANCE, JsonValue.class, Priority.BUILT_IN);
         register(OptionalIntSerializer.INSTANCE, OptionalInt.class, Priority.BUILT_IN);
         register(OptionalLongSerializer.INSTANCE, OptionalLong.class, Priority.BUILT_IN);
