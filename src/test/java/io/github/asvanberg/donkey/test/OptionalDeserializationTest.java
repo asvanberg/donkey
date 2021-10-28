@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.OptionalLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,6 +39,23 @@ public class OptionalDeserializationTest extends DefaultConfigurationTest {
         final String json = jsonb.toJson(OptionalInt.empty());
         final OptionalInt optionalInt = jsonb.fromJson(json, OptionalInt.class);
         assertThat(optionalInt)
+                .isEmpty();
+    }
+
+    @Property
+    public void optional_long(@ForAll long l) {
+        final String json = jsonb.toJson(OptionalLong.of(l));
+        final OptionalLong optionalLong = jsonb.fromJson(json, OptionalLong.class);
+        assertThat(optionalLong)
+                .isPresent()
+                .hasValue(l);
+    }
+
+    @Test
+    public void empty_optional_long() {
+        final String json = jsonb.toJson(OptionalLong.empty());
+        final OptionalLong optionalLong = jsonb.fromJson(json, OptionalLong.class);
+        assertThat(optionalLong)
                 .isEmpty();
     }
 }
