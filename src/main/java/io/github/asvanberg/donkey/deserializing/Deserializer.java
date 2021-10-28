@@ -8,6 +8,7 @@ import jakarta.json.stream.JsonParser;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -38,6 +39,7 @@ public class Deserializer {
         deserializers.put(OptionalInt.class, OptionalIntDeserializer::new);
         deserializers.put(OptionalLong.class, OptionalLongDeserializer::new);
         deserializers.put(OptionalDouble.class, OptionalDoubleDeserializer::new);
+        deserializers.put(Instant.class, InstantDeserializer::new);
         parameterizedDeserializers.put(ArrayList.class, ignoringHistory(ListDeserializer::new));
         parameterizedDeserializers.put(HashMap.class, ignoringHistory(MapDeserializer::new));
         parameterizedDeserializers.put(Optional.class, OptionalDeserializer::new);
