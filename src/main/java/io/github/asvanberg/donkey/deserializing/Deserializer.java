@@ -26,6 +26,8 @@ public class Deserializer {
         deserializers.put(int.class, IntDeserializer::new);
         deserializers.put(Float.class, FloatDeserializer::new);
         deserializers.put(float.class, FloatDeserializer::new);
+        deserializers.put(Double.class, DoubleDeserializer::new);
+        deserializers.put(double.class, DoubleDeserializer::new);
         deserializers.put(String.class, StringDeserializer::new);
         deserializers.put(long.class, LongDeserializer::new);
         deserializers.put(boolean.class, BooleanDeserializer::new);

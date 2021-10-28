@@ -27,7 +27,7 @@ and all parameters must be annotated with `@JsonbProperty` and have an explicit 
 ## Roadmap
 Checklist for what is required for the 1.0 release.
 * [ ] (De-)serializing the following types
-  * [ ] Primitives (and their wrappers)
+  * [x] Primitives (and their wrappers)
   * [x] `String`
   * [x] `Collection<E>` and `List<E>`
   * [ ] `Optional` (and the primitive specializations)
