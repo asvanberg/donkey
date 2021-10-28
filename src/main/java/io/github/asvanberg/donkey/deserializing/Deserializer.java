@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -32,6 +33,7 @@ public class Deserializer {
         deserializers.put(long.class, LongDeserializer::new);
         deserializers.put(boolean.class, BooleanDeserializer::new);
         deserializers.put(Boolean.class, BooleanDeserializer::new);
+        deserializers.put(OptionalInt.class, OptionalIntDeserializer::new);
         parameterizedDeserializers.put(ArrayList.class, ignoringHistory(ListDeserializer::new));
         parameterizedDeserializers.put(HashMap.class, ignoringHistory(MapDeserializer::new));
         parameterizedDeserializers.put(Optional.class, OptionalDeserializer::new);
