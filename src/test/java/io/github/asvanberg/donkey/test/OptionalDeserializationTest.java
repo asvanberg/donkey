@@ -5,6 +5,7 @@ import net.jqwik.api.Property;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 
@@ -56,6 +57,24 @@ public class OptionalDeserializationTest extends DefaultConfigurationTest {
         final String json = jsonb.toJson(OptionalLong.empty());
         final OptionalLong optionalLong = jsonb.fromJson(json, OptionalLong.class);
         assertThat(optionalLong)
+                .isEmpty();
+    }
+
+
+    @Property
+    public void optional_double(@ForAll double d) {
+        final String json = jsonb.toJson(OptionalDouble.of(d));
+        final OptionalDouble optionalDouble = jsonb.fromJson(json, OptionalDouble.class);
+        assertThat(optionalDouble)
+                .isPresent()
+                .hasValue(d);
+    }
+
+    @Test
+    public void empty_optional_double() {
+        final String json = jsonb.toJson(OptionalDouble.empty());
+        final OptionalDouble optionalDouble = jsonb.fromJson(json, OptionalDouble.class);
+        assertThat(optionalDouble)
                 .isEmpty();
     }
 }

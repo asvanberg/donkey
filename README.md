@@ -30,7 +30,7 @@ Checklist for what is required for the 1.0 release.
   * [x] Primitives (and their wrappers)
   * [x] `String`
   * [x] `Collection<E>` and `List<E>`
-  * [ ] `Optional` (and the primitive specializations)
+  * [x] `Optional` (and the primitive specializations)
   * [ ] Java Time API (`java.time`)
     * [ ] `Instant`
     * [ ] `OffsetDateTime`
