@@ -40,4 +40,12 @@ public class JavaTimeTest extends DefaultConfigurationTest {
         assertThat(deserialized)
                 .isEqualTo(instant);
     }
+
+    @Property
+    public void offset_date_time(@ForAll OffsetDateTime offsetDateTime) {
+        final String json = jsonb.toJson(offsetDateTime);
+        final OffsetDateTime deserialized = jsonb.fromJson(json, OffsetDateTime.class);
+        assertThat(deserialized)
+                .isEqualTo(offsetDateTime);
+    }
 }

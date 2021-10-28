@@ -32,8 +32,8 @@ Checklist for what is required for the 1.0 release.
   * [x] `Collection<E>` and `List<E>`
   * [x] `Optional` (and the primitive specializations)
   * [ ] Java Time API (`java.time`)
-    * [ ] `Instant`
-    * [ ] `OffsetDateTime`
+    * [x] `Instant`
+    * [x] `OffsetDateTime`
     * [ ] `LocalDate`
     * [ ] `LocalTime`
     * [ ] `LocalDateTime`
