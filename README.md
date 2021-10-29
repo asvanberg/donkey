@@ -34,7 +34,7 @@ Checklist for what is required for the 1.0 release.
   * [ ] Java Time API (`java.time`)
     * [x] `Instant`
     * [x] `OffsetDateTime`
-    * [ ] `LocalDate`
+    * [x] `LocalDate`
     * [ ] `LocalTime`
     * [x] `LocalDateTime`
   * [x] `Map<String, E>`

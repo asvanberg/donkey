@@ -5,6 +5,7 @@ import net.jqwik.api.Property;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -66,5 +67,23 @@ public class JavaTimeTest extends DefaultConfigurationTest {
         final LocalDateTime deserialized = jsonb.fromJson(json, LocalDateTime.class);
         assertThat(deserialized)
                 .isEqualTo(localDateTime);
+    }
+
+    @Test
+    public void local_date_serialize_as_iso_format_by_default() {
+        final LocalDate now = LocalDate.now();
+        final String expected = DateTimeFormatter.ISO_LOCAL_DATE.format(now);
+        final String json = jsonb.toJson(now);
+        assertParsedJson(json)
+                .isString()
+                .isEqualTo(expected);
+    }
+
+    @Property
+    public void local_date(@ForAll LocalDate localDate) {
+        final String json = jsonb.toJson(localDate);
+        final LocalDate deserialized = jsonb.fromJson(json, LocalDate.class);
+        assertThat(deserialized)
+                .isEqualTo(localDate);
     }
 }
