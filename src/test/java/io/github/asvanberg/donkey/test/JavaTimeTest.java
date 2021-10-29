@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -85,5 +86,23 @@ public class JavaTimeTest extends DefaultConfigurationTest {
         final LocalDate deserialized = jsonb.fromJson(json, LocalDate.class);
         assertThat(deserialized)
                 .isEqualTo(localDate);
+    }
+
+    @Test
+    public void local_time_serialize_as_iso_format_by_default() {
+        final LocalTime now = LocalTime.now();
+        final String expected = DateTimeFormatter.ISO_LOCAL_TIME.format(now);
+        final String json = jsonb.toJson(now);
+        assertParsedJson(json)
+                .isString()
+                .isEqualTo(expected);
+    }
+
+    @Property
+    public void local_time(@ForAll LocalTime localTime) {
+        final String json = jsonb.toJson(localTime);
+        final LocalTime deserialized = jsonb.fromJson(json, LocalTime.class);
+        assertThat(deserialized)
+                .isEqualTo(localTime);
     }
 }

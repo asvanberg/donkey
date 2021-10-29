@@ -26,16 +26,16 @@ and all parameters must be annotated with `@JsonbProperty` and have an explicit 
 
 ## Roadmap
 Checklist for what is required for the 1.0 release.
-* [ ] (De-)serializing the following types
+* [x] (De-)serializing the following types
   * [x] Primitives (and their wrappers)
   * [x] `String`
   * [x] `Collection<E>` and `List<E>`
   * [x] `Optional` (and the primitive specializations)
-  * [ ] Java Time API (`java.time`)
+  * [x] Java Time API (`java.time`)
     * [x] `Instant`
     * [x] `OffsetDateTime`
     * [x] `LocalDate`
-    * [ ] `LocalTime`
+    * [x] `LocalTime`
     * [x] `LocalDateTime`
   * [x] `Map<String, E>`
   * [x] Arbitrary objects with a `@JsonbCreator` method

@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -65,6 +66,7 @@ public class Serializers
         register(OffsetDateTimeSerializer.INSTANCE, OffsetDateTime.class, Priority.BUILT_IN);
         register(LocalDateTimeSerializer.INSTANCE, LocalDateTime.class, Priority.BUILT_IN);
         register(LocalDateSerializer.INSTANCE, LocalDate.class, Priority.BUILT_IN);
+        register(LocalTimeSerializer.INSTANCE, LocalTime.class, Priority.BUILT_IN);
     }
 
     private static Stream<Class<?>> getTypeArgumentForInterface(final Object object, final Class<?> interfaceClass)
