@@ -9,6 +9,7 @@ import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,6 +62,7 @@ public class Serializers
         register(MapSerializer.INSTANCE, Map.class, Priority.BUILT_IN);
         register(InstantSerializer.INSTANCE, Instant.class, Priority.BUILT_IN);
         register(OffsetDateTimeSerializer.INSTANCE, OffsetDateTime.class, Priority.BUILT_IN);
+        register(LocalDateTimeSerializer.INSTANCE, LocalDateTime.class, Priority.BUILT_IN);
     }
 
     private static Stream<Class<?>> getTypeArgumentForInterface(final Object object, final Class<?> interfaceClass)

@@ -36,7 +36,7 @@ Checklist for what is required for the 1.0 release.
     * [x] `OffsetDateTime`
     * [ ] `LocalDate`
     * [ ] `LocalTime`
-    * [ ] `LocalDateTime`
+    * [x] `LocalDateTime`
   * [x] `Map<String, E>`
   * [x] Arbitrary objects with a `@JsonbCreator` method
 * [ ] Support [`@JsonbDateFormat`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbDateFormat.html)
