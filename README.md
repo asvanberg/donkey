@@ -46,7 +46,7 @@ Checklist for what is required for the 1.0 release.
   * [ ] On [`@JsonbCreator`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbCreator.html) parameters
   * [ ] When serializing methods annotated with [`@JsonbProperty`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbProperty.html)
 * [ ] Support [`@JsonbTypeDeserializer`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbTypeDeserializer.html) on parameters to `@JsonbCreator`
-* [ ] Support [`@JsonbTypeSerializer`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbTypeSerializer.html) on methods annotated with `@JsonbProperty`
+* [x] Support [`@JsonbTypeSerializer`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbTypeSerializer.html) on methods annotated with `@JsonbProperty`
 
 ### Future work
 * [ ] Configure `Instant` as ISO format (string), epoch seconds, or epoch milliseconds
