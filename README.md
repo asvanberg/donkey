@@ -43,8 +43,7 @@ Checklist for what is required for the 1.0 release.
   * [ ] Serialization
   * [ ] Deserialization
 * [ ] Support [`@JsonbTypeAdapter`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbTypeAdapter.html)
-  * [ ] On [`@JsonbCreator`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbCreator.html) parameters
-  * [ ] When serializing methods annotated with [`@JsonbProperty`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbProperty.html)
+      when serializing methods annotated with [`@JsonbProperty`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbProperty.html)
 * [x] Support [`@JsonbTypeSerializer`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbTypeSerializer.html) on methods annotated with `@JsonbProperty`
 
 ### Future work
@@ -52,3 +51,6 @@ Checklist for what is required for the 1.0 release.
   * [ ] Serialization
   * [ ] Deserialization
 * [ ] Support [`@JsonbTypeDeserializer`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbTypeDeserializer.html) on parameters to `@JsonbCreator` (waiting for https://github.com/eclipse-ee4j/jsonb-api/pull/283 to be released)
+
+### Desired but currently unsupported by the specification
+* [ ] Support `@JsonbTypeAdapter` on `@JsonbCreator` parameters
