@@ -22,9 +22,9 @@ class MapDeserializer implements JsonbDeserializer<Map<String, ?>>
             final JsonParser parser, final DeserializationContext ctx, final Type rtType)
     {
         final Map<String, Object> map = new HashMap<>();
+        Util.assertCurrentParserPosition(JsonParser.Event.START_OBJECT, parser);
         while (parser.next() != JsonParser.Event.END_OBJECT) {
             final String key = parser.getString();
-            parser.next();
             final Object value = ctx.deserialize(valueType, parser);
             map.put(key, value);
         }

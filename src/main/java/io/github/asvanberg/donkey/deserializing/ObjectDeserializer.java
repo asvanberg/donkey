@@ -8,14 +8,17 @@ import java.util.Optional;
 class ObjectDeserializer<T> extends NullableDeserializer<T> {
     private final Creator<T> creator;
 
-    ObjectDeserializer(final ParserHistory parserHistory, final Creator<T> creator) {
-        super(parserHistory);
+    static <T> ObjectDeserializer<T> of(Class<T> clazz) {
+        return new ObjectDeserializer<>(Creator.forClass(clazz));
+    }
+
+    private ObjectDeserializer(final Creator<T> creator) {
         this.creator = creator;
     }
 
     @Override
     protected T getValue(final JsonParser parser, final DeserializationContext ctx) {
-        assertCurrentParserPosition(JsonParser.Event.START_OBJECT);
+        Util.assertCurrentParserPosition(JsonParser.Event.START_OBJECT, parser);
         final Object[] creationParameters = new Object[creator.parameterCount()];
         while (parser.next() != JsonParser.Event.END_OBJECT) {
             final String parameterName = parser.getString();
@@ -25,7 +28,6 @@ class ObjectDeserializer<T> extends NullableDeserializer<T> {
             }
             else {
                 final Creator.Parameter param = parameter.get();
-                parser.next(); // At KEY_NAME, move to what we want to deserialize
                 final Object parameterValue = ctx.deserialize(param.type(), parser);
                 creationParameters[param.index()] = parameterValue;
             }

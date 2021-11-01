@@ -1,20 +1,19 @@
 package io.github.asvanberg.donkey.deserializing;
 
 import jakarta.json.bind.serializer.DeserializationContext;
+import jakarta.json.bind.serializer.JsonbDeserializer;
 import jakarta.json.stream.JsonParser;
 
 import java.lang.reflect.Type;
 
-class FloatDeserializer extends BaseDeserializer<Float> {
-    FloatDeserializer(final ParserHistory parserHistory) {
-        super(parserHistory);
-    }
+enum FloatDeserializer implements JsonbDeserializer<Float> {
+    INSTANCE;
 
     @Override
     public Float deserialize(
             final JsonParser parser, final DeserializationContext ctx, final Type rtType)
     {
-        assertCurrentParserPosition(JsonParser.Event.VALUE_NUMBER);
+        Util.assertCurrentParserPosition(JsonParser.Event.VALUE_NUMBER, parser);
         return parser.getBigDecimal().floatValue();
     }
 }
