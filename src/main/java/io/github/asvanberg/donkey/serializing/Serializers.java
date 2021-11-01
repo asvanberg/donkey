@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,9 +31,13 @@ import java.util.stream.Stream;
 public class Serializers
 {
     private final Collection<RegisteredSerializer> serializers = new ArrayList<>();
+    private final Locale locale;
 
     public Serializers(final JsonbConfig config)
     {
+        this.locale = config.getProperty(JsonbConfig.LOCALE)
+                            .map(Locale.class::cast)
+                            .orElseGet(Locale::getDefault);
         initializeSerializers(config);
     }
 
@@ -67,6 +72,7 @@ public class Serializers
         register(LocalDateTimeSerializer.INSTANCE, LocalDateTime.class, Priority.BUILT_IN);
         register(LocalDateSerializer.INSTANCE, LocalDate.class, Priority.BUILT_IN);
         register(LocalTimeSerializer.INSTANCE, LocalTime.class, Priority.BUILT_IN);
+        register(new TemporalAccessorSerializer(locale), TemporalAccessorProperty.class, Priority.BUILT_IN);
     }
 
     private static Stream<Class<?>> getTypeArgumentForInterface(final Object object, final Class<?> interfaceClass)

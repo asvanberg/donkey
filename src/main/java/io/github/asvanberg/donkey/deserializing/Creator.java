@@ -5,6 +5,7 @@ import io.github.asvanberg.donkey.exceptions.MissingExplicitJsonbPropertyValueEx
 import io.github.asvanberg.donkey.exceptions.MissingJsonbPropertyOnJsonbCreatorParameterException;
 import io.github.asvanberg.donkey.exceptions.NoJsonbCreatorException;
 import jakarta.json.bind.annotation.JsonbCreator;
+import jakarta.json.bind.annotation.JsonbDateFormat;
 import jakarta.json.bind.annotation.JsonbProperty;
 
 import java.lang.reflect.Constructor;
@@ -48,9 +49,22 @@ abstract class Creator<T> {
             if (propertyName.isBlank()) {
                 throw new MissingExplicitJsonbPropertyValueException(parameter, executable);
             }
-            creationParameters.put(propertyName, new Parameter(parameter.getParameterizedType(), i));
+            creationParameters.put(propertyName, new Parameter(getType(parameter), i));
         }
         return creationParameters;
+    }
+
+    private static Type getType(final java.lang.reflect.Parameter parameter) {
+        final JsonbDateFormat jsonbDateFormat = parameter.getAnnotation(JsonbDateFormat.class);
+        if (jsonbDateFormat != null) {
+            return new CustomDateFormatType(
+                    jsonbDateFormat.value(),
+                    jsonbDateFormat.locale(),
+                    parameter.getType());
+        }
+        else {
+            return parameter.getParameterizedType();
+        }
     }
 
     private final Map<String, Parameter> parameters;

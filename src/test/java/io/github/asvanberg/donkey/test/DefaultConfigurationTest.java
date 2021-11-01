@@ -1,6 +1,7 @@
 package io.github.asvanberg.donkey.test;
 
 import jakarta.json.bind.Jsonb;
+import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.spi.JsonbProvider;
 import net.jqwik.api.lifecycle.AfterProperty;
 import net.jqwik.api.lifecycle.BeforeProperty;
@@ -17,7 +18,12 @@ public abstract class DefaultConfigurationTest
     {
         jsonb = JsonbProvider.provider("io.github.asvanberg.donkey.DonkeyProvider")
                              .create()
+                             .withConfig(config())
                              .build();
+    }
+
+    protected JsonbConfig config() {
+        return new JsonbConfig();
     }
 
     @AfterEach
