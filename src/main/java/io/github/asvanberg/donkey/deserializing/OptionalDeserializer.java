@@ -9,8 +9,7 @@ import java.util.Optional;
 class OptionalDeserializer<T> extends NullableDeserializer<Optional<T>> {
     private final Type type;
 
-    OptionalDeserializer(final ParserHistory parserHistory, final Type[] type) {
-        super(parserHistory);
+    OptionalDeserializer(final Type[] type) {
         this.type = type[0];
     }
 

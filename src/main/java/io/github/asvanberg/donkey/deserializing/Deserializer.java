@@ -20,67 +20,57 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class Deserializer {
-    private final Map<Class<?>, Function<ParserHistory, JsonbDeserializer<?>>> deserializers
+    private final Map<Class<?>, JsonbDeserializer<?>> deserializers
             = new HashMap<>();
-    private final Map<Class<?>, BiFunction<ParserHistory, Type[], JsonbDeserializer<?>>> parameterizedDeserializers
+    private final Map<Class<?>, Function<Type[], JsonbDeserializer<?>>> parameterizedDeserializers
             = new HashMap<>();
 
     public Deserializer(final JsonbConfig config) {
-        deserializers.put(Integer.class, IntDeserializer::new);
-        deserializers.put(int.class, IntDeserializer::new);
-        deserializers.put(Float.class, FloatDeserializer::new);
-        deserializers.put(float.class, FloatDeserializer::new);
-        deserializers.put(Double.class, DoubleDeserializer::new);
-        deserializers.put(double.class, DoubleDeserializer::new);
-        deserializers.put(String.class, StringDeserializer::new);
-        deserializers.put(long.class, LongDeserializer::new);
-        deserializers.put(boolean.class, BooleanDeserializer::new);
-        deserializers.put(Boolean.class, BooleanDeserializer::new);
-        deserializers.put(OptionalInt.class, OptionalIntDeserializer::new);
-        deserializers.put(OptionalLong.class, OptionalLongDeserializer::new);
-        deserializers.put(OptionalDouble.class, OptionalDoubleDeserializer::new);
-        deserializers.put(Instant.class, InstantDeserializer::new);
-        deserializers.put(OffsetDateTime.class, OffsetDateTimeDeserializer::new);
-        deserializers.put(LocalDateTime.class, LocalDateTimeDeserializer::new);
-        deserializers.put(LocalDate.class, LocalDateDeserializer::new);
-        deserializers.put(LocalTime.class, LocalTimeDeserializer::new);
-        parameterizedDeserializers.put(ArrayList.class, ignoringHistory(ListDeserializer::new));
-        parameterizedDeserializers.put(HashMap.class, ignoringHistory(MapDeserializer::new));
+        deserializers.put(Integer.class, IntDeserializer.INSTANCE);
+        deserializers.put(int.class, IntDeserializer.INSTANCE);
+        deserializers.put(Float.class, FloatDeserializer.INSTANCE);
+        deserializers.put(float.class, FloatDeserializer.INSTANCE);
+        deserializers.put(Double.class, DoubleDeserializer.INSTANCE);
+        deserializers.put(double.class, DoubleDeserializer.INSTANCE);
+        deserializers.put(String.class, StringDeserializer.INSTANCE);
+        deserializers.put(long.class, LongDeserializer.INSTANCE);
+        deserializers.put(boolean.class, BooleanDeserializer.INSTANCE);
+        deserializers.put(Boolean.class, BooleanDeserializer.INSTANCE);
+        deserializers.put(OptionalInt.class, OptionalIntDeserializer.INSTANCE);
+        deserializers.put(OptionalLong.class, OptionalLongDeserializer.INSTANCE);
+        deserializers.put(OptionalDouble.class, OptionalDoubleDeserializer.INSTANCE);
+        deserializers.put(Instant.class, InstantDeserializer.INSTANCE);
+        deserializers.put(OffsetDateTime.class, OffsetDateTimeDeserializer.INSTANCE);
+        deserializers.put(LocalDateTime.class, LocalDateTimeDeserializer.INSTANCE);
+        deserializers.put(LocalDate.class, LocalDateDeserializer.INSTANCE);
+        deserializers.put(LocalTime.class, LocalTimeDeserializer.INSTANCE);
+        parameterizedDeserializers.put(ArrayList.class, ListDeserializer::new);
+        parameterizedDeserializers.put(HashMap.class, MapDeserializer::new);
         parameterizedDeserializers.put(Optional.class, OptionalDeserializer::new);
-    }
-
-    private BiFunction<ParserHistory, Type[], JsonbDeserializer<?>> ignoringHistory(
-            Function<Type[], JsonbDeserializer<?>> deserializer)
-    {
-        return (parserHistory, types) -> deserializer.apply(types);
     }
 
     @SuppressWarnings("unchecked")
     private <T> JsonbDeserializer<T> getJsonbDeserializer(
-            final DeserializationProcess deserializationProcess,
             final Type runtimeType)
     {
-        return (JsonbDeserializer<T>) getUncheckedJsonbDeserializer(deserializationProcess, runtimeType);
+        return (JsonbDeserializer<T>) getUncheckedJsonbDeserializer(runtimeType);
     }
 
     private JsonbDeserializer<?> getUncheckedJsonbDeserializer(
-            final DeserializationProcess deserializationProcess,
             final Type runtimeType)
     {
         if (runtimeType instanceof Class<?> clazz) {
-            return deserializers.computeIfAbsent(clazz, ObjectDeserializerFactory::new)
-                                .apply(deserializationProcess);
+            return deserializers.computeIfAbsent(clazz, ObjectDeserializer::of);
         }
         else if (runtimeType instanceof ParameterizedType parameterizedType) {
             if (parameterizedType.getRawType() instanceof Class<?> clazz) {
                 for (var entry : parameterizedDeserializers.entrySet()) {
                     if (clazz.isAssignableFrom(entry.getKey())) {
                         return entry.getValue()
-                                    .apply(deserializationProcess, parameterizedType.getActualTypeArguments());
+                                    .apply(parameterizedType.getActualTypeArguments());
                     }
                 }
             }
@@ -89,27 +79,10 @@ public class Deserializer {
     }
 
     public <T> T deserialize(final JsonParser parser, final Type runtimeType) {
-        return new DeserializationProcess(parser).deserialize(runtimeType);
+        return new DeserializationProcess().deserialize(runtimeType, parser);
     }
 
-    private class DeserializationProcess implements DeserializationContext, ParserHistory {
-        private final JsonParser parser;
-        private JsonParser.Event currentEvent;
-
-        public DeserializationProcess(final JsonParser parser) {
-            this.parser = new DelegatingJsonParser(parser) {
-                @Override
-                public Event next() {
-                    return currentEvent = super.next();
-                }
-            };
-            this.parser.next();
-        }
-
-        public <T> T deserialize(final Type type) {
-            return deserialize(type, parser);
-        }
-
+    private class DeserializationProcess implements DeserializationContext {
         @Override
         public <T> T deserialize(final Class<T> clazz, final JsonParser parser) {
             return deserialize((Type) clazz, parser);
@@ -117,13 +90,8 @@ public class Deserializer {
 
         @Override
         public <T> T deserialize(final Type type, final JsonParser parser) {
-            final JsonbDeserializer<T> jsonbDeserializer = getJsonbDeserializer(this, type);
+            final JsonbDeserializer<T> jsonbDeserializer = getJsonbDeserializer(type);
             return jsonbDeserializer.deserialize(parser, this, type);
-        }
-
-        @Override
-        public JsonParser.Event currentEvent() {
-            return currentEvent;
         }
     }
 }

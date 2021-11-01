@@ -1,21 +1,19 @@
 package io.github.asvanberg.donkey.deserializing;
 
 import jakarta.json.bind.serializer.DeserializationContext;
+import jakarta.json.bind.serializer.JsonbDeserializer;
 import jakarta.json.stream.JsonParser;
 
 import java.lang.reflect.Type;
 
-class IntDeserializer extends BaseDeserializer<Integer>
-{
-    IntDeserializer(final ParserHistory parserHistory) {
-        super(parserHistory);
-    }
+enum IntDeserializer implements JsonbDeserializer<Integer> {
+    INSTANCE;
 
     @Override
     public Integer deserialize(
             final JsonParser parser, final DeserializationContext ctx, final Type rtType)
     {
-        assertCurrentParserPosition(JsonParser.Event.VALUE_NUMBER);
+        Util.assertCurrentParserPosition(JsonParser.Event.VALUE_NUMBER, parser);
         return parser.getInt();
     }
 }

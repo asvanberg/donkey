@@ -6,21 +6,18 @@ import jakarta.json.stream.JsonParser;
 
 import java.lang.reflect.Type;
 
-abstract class NullableDeserializer<T> extends BaseDeserializer<T> {
-
-    NullableDeserializer(final ParserHistory parserHistory) {
-        super(parserHistory);
-    }
-
+abstract class NullableDeserializer<T> implements JsonbDeserializer<T> {
     @Override
     public final T deserialize(
             final JsonParser parser, final DeserializationContext ctx, final Type rtType)
     {
-        if (parserHistory.currentEvent() == JsonParser.Event.VALUE_NULL) {
+        final JsonParser.Event event = parser.next();
+        if (event == JsonParser.Event.VALUE_NULL) {
             return nullValue();
         }
         else {
-            return getValue(parser, ctx);
+            final PeekableJsonParser peekableJsonParser = new PeekableJsonParser(parser, event);
+            return getValue(peekableJsonParser, ctx);
         }
     }
 

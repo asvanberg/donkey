@@ -21,9 +21,11 @@ class ListDeserializer<T> implements JsonbDeserializer<List<T>>
     public List<T> deserialize(
             final JsonParser parser, final DeserializationContext ctx, final Type rtType)
     {
+        final PeekableJsonParser peekableJsonParser = new PeekableJsonParser(parser);
+        peekableJsonParser.next();
         final ArrayList<T> list = new ArrayList<>();
-        while (parser.next() != JsonParser.Event.END_ARRAY) {
-            list.add(ctx.deserialize(elementType, parser));
+        while (peekableJsonParser.peek() != JsonParser.Event.END_ARRAY) {
+            list.add(ctx.deserialize(elementType, peekableJsonParser));
         }
         return list;
     }
