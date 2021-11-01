@@ -5,12 +5,7 @@ import jakarta.json.bind.serializer.SerializationContext;
 import jakarta.json.stream.JsonGenerator;
 
 public class PrefixingStringSerializer implements JsonbSerializer<String> {
-    public static final String DEFAULT_PREFIX = "default_prefix";
     private final String prefix;
-
-    public PrefixingStringSerializer() {
-        this(DEFAULT_PREFIX);
-    }
 
     public PrefixingStringSerializer(final String prefix) {
         this.prefix = prefix;
