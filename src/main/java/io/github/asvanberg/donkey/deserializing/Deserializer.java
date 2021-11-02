@@ -2,6 +2,7 @@ package io.github.asvanberg.donkey.deserializing;
 
 import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.JsonbException;
+import jakarta.json.bind.annotation.JsonbDateFormat;
 import jakarta.json.bind.serializer.DeserializationContext;
 import jakarta.json.bind.serializer.JsonbDeserializer;
 import jakarta.json.stream.JsonParser;
@@ -13,9 +14,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -28,7 +33,20 @@ public class Deserializer {
     private final Map<Class<?>, Function<Type[], JsonbDeserializer<?>>> parameterizedDeserializers
             = new HashMap<>();
 
+    private final Locale defaultLocale;
+    private final Map<LocalizedPattern, DateTimeFormatter> dateTimeFormatters = new HashMap<>();
+
+    private record LocalizedPattern(String pattern, Locale locale) {
+        DateTimeFormatter createFormatter() {
+            return DateTimeFormatter.ofPattern(pattern, locale);
+        }
+    }
+
+
     public Deserializer(final JsonbConfig config) {
+        this.defaultLocale = config.getProperty(JsonbConfig.LOCALE)
+                                   .map(Locale.class::cast)
+                                   .orElseGet(Locale::getDefault);
         deserializers.put(Integer.class, IntDeserializer.INSTANCE);
         deserializers.put(int.class, IntDeserializer.INSTANCE);
         deserializers.put(Float.class, FloatDeserializer.INSTANCE);
@@ -59,6 +77,12 @@ public class Deserializer {
         return (JsonbDeserializer<T>) getUncheckedJsonbDeserializer(runtimeType);
     }
 
+    private static final Map<Class<?>, TemporalQuery<?>> TEMPORAL_QUERIES_BY_TYPE =
+            Map.of(LocalDate.class, LocalDate::from,
+                   LocalTime.class, LocalTime::from,
+                   LocalDateTime.class, LocalDateTime::from,
+                   OffsetDateTime.class, OffsetDateTime::from);
+
     private JsonbDeserializer<?> getUncheckedJsonbDeserializer(
             final Type runtimeType)
     {
@@ -74,6 +98,18 @@ public class Deserializer {
                     }
                 }
             }
+        }
+        else if (runtimeType instanceof CustomDateFormatType customDateFormatType) {
+            final Locale locale =
+                    Objects.equals(JsonbDateFormat.DEFAULT_LOCALE, customDateFormatType.locale())
+                            ? this.defaultLocale
+                            : Locale.forLanguageTag(customDateFormatType.locale());
+            final DateTimeFormatter dateTimeFormatter = dateTimeFormatters.computeIfAbsent(
+                    new LocalizedPattern(customDateFormatType.pattern(), locale),
+                    LocalizedPattern::createFormatter);
+            return new CustomDateFormatDeserializer<>(
+                    dateTimeFormatter,
+                    TEMPORAL_QUERIES_BY_TYPE.get(customDateFormatType.temporalQuery()));
         }
         throw new JsonbException(runtimeType + " not supported");
     }
