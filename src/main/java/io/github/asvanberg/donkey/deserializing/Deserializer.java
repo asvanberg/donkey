@@ -1,7 +1,10 @@
 package io.github.asvanberg.donkey.deserializing;
 
+import io.github.asvanberg.donkey.exceptions.AdaptingFailedException;
+import io.github.asvanberg.donkey.internal.Util;
 import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.JsonbException;
+import jakarta.json.bind.adapter.JsonbAdapter;
 import jakarta.json.bind.annotation.JsonbDateFormat;
 import jakarta.json.bind.serializer.DeserializationContext;
 import jakarta.json.bind.serializer.JsonbDeserializer;
@@ -42,11 +45,16 @@ public class Deserializer {
         }
     }
 
+    private final Map<Type, Adapter> adapters = new HashMap<>();
+
+    private record Adapter(Type adaptedType, JsonbAdapter<?, ?> jsonbAdapter) {
+    }
 
     public Deserializer(final JsonbConfig config) {
         this.defaultLocale = config.getProperty(JsonbConfig.LOCALE)
                                    .map(Locale.class::cast)
                                    .orElseGet(Locale::getDefault);
+        initializeAdapters(config);
         deserializers.put(Integer.class, IntDeserializer.INSTANCE);
         deserializers.put(int.class, IntDeserializer.INSTANCE);
         deserializers.put(Float.class, FloatDeserializer.INSTANCE);
@@ -54,6 +62,7 @@ public class Deserializer {
         deserializers.put(Double.class, DoubleDeserializer.INSTANCE);
         deserializers.put(double.class, DoubleDeserializer.INSTANCE);
         deserializers.put(String.class, StringDeserializer.INSTANCE);
+        deserializers.put(Long.class, LongDeserializer.INSTANCE);
         deserializers.put(long.class, LongDeserializer.INSTANCE);
         deserializers.put(boolean.class, BooleanDeserializer.INSTANCE);
         deserializers.put(Boolean.class, BooleanDeserializer.INSTANCE);
@@ -68,6 +77,27 @@ public class Deserializer {
         parameterizedDeserializers.put(ArrayList.class, ListDeserializer::new);
         parameterizedDeserializers.put(HashMap.class, MapDeserializer::new);
         parameterizedDeserializers.put(Optional.class, OptionalDeserializer::new);
+    }
+
+    private void initializeAdapters(final JsonbConfig config)
+    {
+        final JsonbAdapter<?, ?>[] providedAdapters
+                = config.getProperty(JsonbConfig.ADAPTERS)
+                        .map(s -> (JsonbAdapter<?, ?>[]) s)
+                        .orElse(new JsonbAdapter[0]);
+        for (JsonbAdapter<?, ?> providedAdapter : providedAdapters) {
+            Util.getParameterizedType(providedAdapter, JsonbAdapter.class)
+                    .ifPresent(parameterizedType ->
+                                       registerAdapter(providedAdapter, parameterizedType));
+        }
+    }
+
+    private void registerAdapter(
+            final JsonbAdapter<?, ?> providedAdapter,
+            final ParameterizedType parameterizedType)
+    {
+        final Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+        adapters.put(actualTypeArguments[0], new Adapter(actualTypeArguments[1], providedAdapter));
     }
 
     @SuppressWarnings("unchecked")
@@ -126,8 +156,25 @@ public class Deserializer {
 
         @Override
         public <T> T deserialize(final Type type, final JsonParser parser) {
+            if (adapters.containsKey(type)) {
+                return deserializeAdapted(type, parser);
+            }
             final JsonbDeserializer<T> jsonbDeserializer = getJsonbDeserializer(type);
             return jsonbDeserializer.deserialize(parser, this, type);
+        }
+
+        @SuppressWarnings("unchecked")
+        private <T> T deserializeAdapted(final Type type, final JsonParser parser)
+        {
+            try {
+                final Adapter adapter = adapters.get(type);
+                final Object adaptedValue = deserialize(adapter.adaptedType(), parser);
+                final JsonbAdapter<T, Object> jsonbAdapter
+                        = (JsonbAdapter<T, Object>) adapter.jsonbAdapter();
+                return jsonbAdapter.adaptFromJson(adaptedValue);
+            } catch (Exception e) {
+                throw new AdaptingFailedException(e);
+            }
         }
     }
 }
