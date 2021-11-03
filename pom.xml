@@ -6,7 +6,7 @@
 
     <groupId>io.github.asvanberg</groupId>
     <artifactId>donkey</artifactId>
-    <version>1-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <name>Donkey</name>
     <description>
