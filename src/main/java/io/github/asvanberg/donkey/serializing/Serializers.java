@@ -75,6 +75,7 @@ public class Serializers implements SerializationContext
         register(LocalDateTimeSerializer.INSTANCE, LocalDateTime.class, Priority.BUILT_IN);
         register(LocalDateSerializer.INSTANCE, LocalDate.class, Priority.BUILT_IN);
         register(LocalTimeSerializer.INSTANCE, LocalTime.class, Priority.BUILT_IN);
+        register(EnumSerializer.INSTANCE, Enum.class, Priority.BUILT_IN);
         register(new TemporalAccessorSerializer(locale), TemporalAccessorProperty.class, Priority.BUILT_IN);
     }
 
