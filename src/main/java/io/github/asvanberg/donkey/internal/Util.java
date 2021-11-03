@@ -1,5 +1,10 @@
 package io.github.asvanberg.donkey.internal;
 
+import io.github.asvanberg.donkey.exceptions.AdaptingFailedException;
+import jakarta.json.bind.adapter.JsonbAdapter;
+import jakarta.json.bind.annotation.JsonbTypeAdapter;
+
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.Objects;
@@ -21,5 +26,15 @@ public class Util
                      .map(ParameterizedType.class::cast)
                      .filter(pt -> interfaceClass.equals(pt.getRawType()))
                      .findAny();
+    }
+
+    public static JsonbAdapter<?, ?> createJsonbAdapter(final JsonbTypeAdapter jsonbTypeAdapter)
+    {
+        try {
+            return jsonbTypeAdapter.value().getConstructor().newInstance();
+        }
+        catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new AdaptingFailedException(e);
+        }
     }
 }

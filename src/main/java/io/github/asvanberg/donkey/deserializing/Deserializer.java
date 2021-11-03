@@ -6,6 +6,7 @@ import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.JsonbException;
 import jakarta.json.bind.adapter.JsonbAdapter;
 import jakarta.json.bind.annotation.JsonbDateFormat;
+import jakarta.json.bind.annotation.JsonbTypeAdapter;
 import jakarta.json.bind.serializer.DeserializationContext;
 import jakarta.json.bind.serializer.JsonbDeserializer;
 import jakarta.json.stream.JsonParser;
@@ -163,8 +164,24 @@ public class Deserializer {
             if (adapters.containsKey(type)) {
                 return deserializeAdapted(type, parser);
             }
+            if (type instanceof Class<?> clazz) {
+                final JsonbTypeAdapter jsonbTypeAdapter
+                        = clazz.getAnnotation(JsonbTypeAdapter.class);
+                if (jsonbTypeAdapter != null) {
+                    registerTypeLevelAdapter(jsonbTypeAdapter);
+                    return deserialize(type, parser);
+                }
+            }
             final JsonbDeserializer<T> jsonbDeserializer = getJsonbDeserializer(type);
             return jsonbDeserializer.deserialize(parser, this, type);
+        }
+
+        private void registerTypeLevelAdapter(final JsonbTypeAdapter jsonbTypeAdapter)
+        {
+            final JsonbAdapter<?, ?> jsonbAdapter = Util.createJsonbAdapter(jsonbTypeAdapter);
+            Util.getParameterizedType(jsonbAdapter, JsonbAdapter.class)
+                        .ifPresent(parameterizedType ->
+                                           registerAdapter(jsonbAdapter, parameterizedType));
         }
 
         @SuppressWarnings("unchecked")
