@@ -6,6 +6,7 @@ import io.github.asvanberg.donkey.serializing.RegisteredSerializer.Priority;
 import jakarta.json.JsonValue;
 import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.adapter.JsonbAdapter;
+import jakarta.json.bind.annotation.JsonbTypeAdapter;
 import jakarta.json.bind.serializer.JsonbSerializer;
 import jakarta.json.bind.serializer.SerializationContext;
 import jakarta.json.stream.JsonGenerator;
@@ -116,8 +117,14 @@ public class Serializers implements SerializationContext
     public <T> void serialize(final T object, final JsonGenerator generator)
     {
         if (object != null) {
-            if (adapters.containsKey(object.getClass())) {
-                final JsonbAdapter<T, ?> adapter = (JsonbAdapter<T, ?>) adapters.get(object.getClass());
+            final Class<?> clazz = object.getClass();
+            final JsonbTypeAdapter jsonbTypeAdapter
+                    = clazz.getAnnotation(JsonbTypeAdapter.class);
+            if (jsonbTypeAdapter != null) {
+                adapters.computeIfAbsent(clazz, c -> Util.createJsonbAdapter(jsonbTypeAdapter));
+            }
+            if (adapters.containsKey(clazz)) {
+                final JsonbAdapter<T, ?> adapter = (JsonbAdapter<T, ?>) adapters.get(clazz);
                 try {
                     serialize(adapter.adaptToJson(object), generator);
                     return;
@@ -126,7 +133,7 @@ public class Serializers implements SerializationContext
                     throw new AdaptingFailedException(e);
                 }
             }
-            final JsonbSerializer<Object> serializer = getJsonbSerializer(object.getClass());
+            final JsonbSerializer<Object> serializer = getJsonbSerializer(clazz);
             serializer.serialize(object, generator, this);
         }
         else {
