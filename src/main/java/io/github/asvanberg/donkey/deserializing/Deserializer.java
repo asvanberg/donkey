@@ -113,10 +113,14 @@ public class Deserializer {
                    LocalDateTime.class, LocalDateTime::from,
                    OffsetDateTime.class, OffsetDateTime::from);
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private JsonbDeserializer<?> getUncheckedJsonbDeserializer(
             final Type runtimeType)
     {
         if (runtimeType instanceof Class<?> clazz) {
+            if (Enum.class.isAssignableFrom(clazz)) {
+                return new EnumDeserializer(clazz);
+            }
             return deserializers.computeIfAbsent(clazz, ObjectDeserializer::of);
         }
         else if (runtimeType instanceof ParameterizedType parameterizedType) {
