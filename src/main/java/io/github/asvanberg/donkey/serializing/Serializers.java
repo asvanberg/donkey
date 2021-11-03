@@ -1,13 +1,15 @@
 package io.github.asvanberg.donkey.serializing;
 
+import io.github.asvanberg.donkey.exceptions.AdaptingFailedException;
+import io.github.asvanberg.donkey.internal.Util;
 import io.github.asvanberg.donkey.serializing.RegisteredSerializer.Priority;
 import jakarta.json.JsonValue;
 import jakarta.json.bind.JsonbConfig;
+import jakarta.json.bind.adapter.JsonbAdapter;
 import jakarta.json.bind.serializer.JsonbSerializer;
 import jakarta.json.bind.serializer.SerializationContext;
 import jakarta.json.stream.JsonGenerator;
 
-import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.Instant;
@@ -16,23 +18,21 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
-import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 @SuppressWarnings("unchecked")
 public class Serializers implements SerializationContext
 {
     private final Collection<RegisteredSerializer> serializers = new ArrayList<>();
+    private final Map<Class<?>, JsonbAdapter<?, ?>> adapters = new HashMap<>();
     private final Locale locale;
 
     public Serializers(final JsonbConfig config)
@@ -41,6 +41,7 @@ public class Serializers implements SerializationContext
                             .map(Locale.class::cast)
                             .orElseGet(Locale::getDefault);
         initializeSerializers(config);
+        initializeAdapters(config);
     }
 
     private void initializeSerializers(final JsonbConfig config)
@@ -50,8 +51,8 @@ public class Serializers implements SerializationContext
                                                                .orElse(new JsonbSerializer[0]);
         for (JsonbSerializer<?> providedSerializer : providedSerializers)
         {
-            getTypeArgumentForInterface(providedSerializer, JsonbSerializer.class)
-                    .forEach(handledType ->
+            getFirstTypeArgumentForInterface(providedSerializer, JsonbSerializer.class)
+                    .ifPresent(handledType ->
                                      register(providedSerializer, handledType, Priority.CONFIGURED));
         }
         register(StringSerializer.INSTANCE, String.class, Priority.BUILT_IN);
@@ -77,21 +78,17 @@ public class Serializers implements SerializationContext
         register(new TemporalAccessorSerializer(locale), TemporalAccessorProperty.class, Priority.BUILT_IN);
     }
 
-    private static Stream<Class<?>> getTypeArgumentForInterface(final Object object, final Class<?> interfaceClass)
+    private static Optional<Class<?>> getFirstTypeArgumentForInterface(
+            final Object object,
+            final Class<?> interfaceClass)
     {
-        return Stream.<Class<?>>iterate(object.getClass(), Predicate.not(Object.class::equals), Class::getSuperclass)
-                     .filter(Objects::nonNull)
-                     .map(Class::getGenericInterfaces)
-                     .flatMap(Arrays::stream)
-                     .filter(ParameterizedType.class::isInstance)
-                     .map(ParameterizedType.class::cast)
-                     .filter(pt -> interfaceClass.equals(pt.getRawType()))
-                     // JsonbDeserializer only has one argument
-                     // JsonbSerializer only has one argument
-                     // JsonbAdapter we only care about the source (first argument)
-                     .map(pt -> pt.getActualTypeArguments()[0])
-                     .filter(Class.class::isInstance)
-                     .map(Class.class::cast);
+        return Util.getParameterizedType(object, interfaceClass)
+                   // JsonbDeserializer only has one argument
+                   // JsonbSerializer only has one argument
+                   // JsonbAdapter we only care about the source (first argument)
+                   .map(pt -> pt.getActualTypeArguments()[0])
+                   .filter(Class.class::isInstance)
+                   .map(Class.class::cast);
     }
 
     private void register(
@@ -102,16 +99,36 @@ public class Serializers implements SerializationContext
         serializers.add(new RegisteredSerializer(configured, handledType, providedSerializer));
     }
 
+    private void initializeAdapters(final JsonbConfig config)
+    {
+        final JsonbAdapter<?, ?>[] providedAdapters
+                = config.getProperty(JsonbConfig.ADAPTERS)
+                        .map(s -> (JsonbAdapter<?, ?>[]) s)
+                        .orElse(new JsonbAdapter[0]);
+        for (JsonbAdapter<?, ?> providedAdapter : providedAdapters) {
+            getFirstTypeArgumentForInterface(providedAdapter, JsonbAdapter.class)
+                    .ifPresent(clazz -> adapters.put(clazz, providedAdapter));
+        }
+    }
+
     @Override
     public <T> void serialize(final T object, final JsonGenerator generator)
     {
-        if (object != null)
-        {
+        if (object != null) {
+            if (adapters.containsKey(object.getClass())) {
+                final JsonbAdapter<T, ?> adapter = (JsonbAdapter<T, ?>) adapters.get(object.getClass());
+                try {
+                    serialize(adapter.adaptToJson(object), generator);
+                    return;
+                }
+                catch (Exception e) {
+                    throw new AdaptingFailedException(e);
+                }
+            }
             final JsonbSerializer<Object> serializer = getJsonbSerializer(object.getClass());
             serializer.serialize(object, generator, this);
         }
-        else
-        {
+        else {
             generator.writeNull();
         }
     }

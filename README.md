@@ -42,8 +42,7 @@ Checklist for what is required for the 1.0 release.
 * [x] Support [`@JsonbDateFormat`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbDateFormat.html)
   * [x] Serialization
   * [x] Deserialization
-* [ ] Support [`@JsonbTypeAdapter`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbTypeAdapter.html)
-      when serializing methods annotated with [`@JsonbProperty`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbProperty.html)
+* [x] Support [`@JsonbTypeAdapter`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbTypeAdapter.html)
 * [x] Support [`@JsonbTypeSerializer`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbTypeSerializer.html) on methods annotated with `@JsonbProperty`
 
 ### Future work
