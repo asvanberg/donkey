@@ -4,6 +4,8 @@ import io.github.asvanberg.donkey.serializing.RegisteredSerializer.Priority;
 import jakarta.json.JsonValue;
 import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.serializer.JsonbSerializer;
+import jakarta.json.bind.serializer.SerializationContext;
+import jakarta.json.stream.JsonGenerator;
 
 import java.lang.reflect.ParameterizedType;
 import java.math.BigDecimal;
@@ -28,7 +30,7 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @SuppressWarnings("unchecked")
-public class Serializers
+public class Serializers implements SerializationContext
 {
     private final Collection<RegisteredSerializer> serializers = new ArrayList<>();
     private final Locale locale;
@@ -98,6 +100,27 @@ public class Serializers
             final Priority configured)
     {
         serializers.add(new RegisteredSerializer(configured, handledType, providedSerializer));
+    }
+
+    @Override
+    public <T> void serialize(final T object, final JsonGenerator generator)
+    {
+        if (object != null)
+        {
+            final JsonbSerializer<Object> serializer = getJsonbSerializer(object.getClass());
+            serializer.serialize(object, generator, this);
+        }
+        else
+        {
+            generator.writeNull();
+        }
+    }
+
+    @Override
+    public <T> void serialize(final String key, final T object, final JsonGenerator generator)
+    {
+        generator.writeKey(key);
+        serialize(object, generator);
     }
 
     public JsonbSerializer<Object> getJsonbSerializer(final Class<?> aClass)

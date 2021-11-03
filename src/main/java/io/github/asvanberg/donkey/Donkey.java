@@ -13,7 +13,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Type;
 
-class Donkey extends JsonbUnifier implements SerializationContext {
+class Donkey extends JsonbUnifier {
     private final JsonProvider provider;
     private final Serializers serializers;
     private final Deserializer deserializer;
@@ -39,7 +39,7 @@ class Donkey extends JsonbUnifier implements SerializationContext {
     {
         try (final JsonGenerator generator = provider.createGenerator(writer))
         {
-            serialize(object, generator);
+            serializers.serialize(object, generator);
         }
         catch (JsonbException jsonbException)
         {
@@ -49,27 +49,6 @@ class Donkey extends JsonbUnifier implements SerializationContext {
         {
             throw new InternalProcessingException(exception);
         }
-    }
-
-    @Override
-    public <T> void serialize(final T object, final JsonGenerator generator)
-    {
-        if (object != null)
-        {
-            final JsonbSerializer<Object> serializer = serializers.getJsonbSerializer(object.getClass());
-            serializer.serialize(object, generator, this);
-        }
-        else
-        {
-            generator.writeNull();
-        }
-    }
-
-    @Override
-    public <T> void serialize(final String key, final T object, final JsonGenerator generator)
-    {
-        generator.writeKey(key);
-        serialize(object, generator);
     }
 
     @Override
