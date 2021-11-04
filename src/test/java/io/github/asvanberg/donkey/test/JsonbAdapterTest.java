@@ -1,6 +1,8 @@
 package io.github.asvanberg.donkey.test;
 
 import io.github.asvanberg.donkey.exceptions.AdaptingFailedException;
+import io.github.asvanberg.donkey.exceptions.NoPropertiesToSerializeException;
+import io.github.asvanberg.donkey.exceptions.UnexpectedParserPositionException;
 import jakarta.json.JsonNumber;
 import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.adapter.JsonbAdapter;
@@ -24,7 +26,8 @@ public class JsonbAdapterTest extends DefaultConfigurationTest {
         return super.config()
                 .withAdapters(new InstantAsEpochSecond())
                 .withAdapters(new OffsetDateTimeAsInstant())
-                .withAdapters(new FailingStringAdapter());
+                .withAdapters(new FailingStringAdapter())
+                .withAdapters(new DoubleToUnserializableAdapter());
     }
 
     public static class InstantAsEpochSecond implements JsonbAdapter<Instant, Long>
@@ -71,6 +74,21 @@ public class JsonbAdapterTest extends DefaultConfigurationTest {
                 throws Exception
         {
             throw new IOException();
+        }
+    }
+
+    public static class DoubleToUnserializableAdapter implements JsonbAdapter<Double, Object>
+    {
+        @Override
+        public Object adaptToJson(final Double obj)
+        {
+            return new Object();
+        }
+
+        @Override
+        public Double adaptFromJson(final Object obj)
+        {
+            throw new UnsupportedOperationException();
         }
     }
 
@@ -136,5 +154,20 @@ public class JsonbAdapterTest extends DefaultConfigurationTest {
         final OffsetDateTime deserialized = jsonb.fromJson("1633539853", OffsetDateTime.class);
         assertThat(deserialized)
                 .isEqualTo(offsetDateTime);
+    }
+
+    @Test
+    public void adapters_do_not_swallow_other_errors_during_deserialization() {
+        final String json = """
+                "not a number"
+                """;
+        assertThatThrownBy(() -> jsonb.fromJson(json, Instant.class))
+                .isInstanceOf(UnexpectedParserPositionException.class);
+    }
+
+    @Test
+    public void adapters_do_not_swallow_other_errors_during_serialization() {
+        assertThatThrownBy(() -> jsonb.toJson(3.14d))
+                .isInstanceOf(NoPropertiesToSerializeException.class);
     }
 }
