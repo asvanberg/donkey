@@ -78,7 +78,8 @@ public class JsonbAdapterTest extends DefaultConfigurationTest {
     public void failed_adapter_during_serialization() {
         final String str = "hello";
         assertThatThrownBy(() -> jsonb.toJson(str))
-                .isInstanceOf(AdaptingFailedException.class);
+                .isInstanceOf(AdaptingFailedException.class)
+                .hasCauseInstanceOf(IOException.class);
     }
 
     @Test
@@ -87,6 +88,7 @@ public class JsonbAdapterTest extends DefaultConfigurationTest {
                 "hello"
                 """;
         assertThatThrownBy(() -> jsonb.fromJson(json, String.class))
-                .isInstanceOf(AdaptingFailedException.class);
+                .isInstanceOf(AdaptingFailedException.class)
+                .hasCauseInstanceOf(IOException.class);
     }
 }
