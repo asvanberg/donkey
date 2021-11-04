@@ -1,6 +1,7 @@
 package io.github.asvanberg.donkey.serializing;
 
 import io.github.asvanberg.donkey.exceptions.AdaptingFailedException;
+import io.github.asvanberg.donkey.internal.NullAdapter;
 import io.github.asvanberg.donkey.internal.Util;
 import io.github.asvanberg.donkey.serializing.RegisteredSerializer.Priority;
 import jakarta.json.JsonValue;
@@ -118,23 +119,22 @@ public class Serializers implements SerializationContext
     {
         if (object != null) {
             final Class<?> clazz = object.getClass();
-            final JsonbTypeAdapter jsonbTypeAdapter
-                    = clazz.getAnnotation(JsonbTypeAdapter.class);
-            if (jsonbTypeAdapter != null) {
-                adapters.computeIfAbsent(clazz, c -> Util.createJsonbAdapter(jsonbTypeAdapter));
+            final JsonbAdapter<T, ?> jsonbAdapter
+                    = (JsonbAdapter<T, ?>) adapters.computeIfAbsent(clazz, this::getAdapter);
+            final Object adapted;
+            try {
+                adapted = jsonbAdapter.adaptToJson(object);
             }
-            if (adapters.containsKey(clazz)) {
-                final JsonbAdapter<T, ?> adapter = (JsonbAdapter<T, ?>) adapters.get(clazz);
-                try {
-                    serialize(adapter.adaptToJson(object), generator);
-                    return;
-                }
-                catch (Exception e) {
-                    throw new AdaptingFailedException(e);
-                }
+            catch (Exception e) {
+                throw new AdaptingFailedException(e);
             }
-            final JsonbSerializer<Object> serializer = getJsonbSerializer(clazz);
-            serializer.serialize(object, generator, this);
+            if (jsonbAdapter != NullAdapter.INSTANCE) {
+                serialize(adapted, generator);
+            }
+            else {
+                final JsonbSerializer<Object> serializer = getJsonbSerializer(adapted.getClass());
+                serializer.serialize(adapted, generator, this);
+            }
         }
         else {
             generator.writeNull();
@@ -146,6 +146,18 @@ public class Serializers implements SerializationContext
     {
         generator.writeKey(key);
         serialize(object, generator);
+    }
+
+    private JsonbAdapter<?, ?> getAdapter(final Class<?> clazz)
+    {
+        final JsonbTypeAdapter jsonbTypeAdapter
+                = clazz.getAnnotation(JsonbTypeAdapter.class);
+        if (jsonbTypeAdapter != null) {
+            return Util.createJsonbAdapter(jsonbTypeAdapter);
+        }
+        else {
+            return NullAdapter.INSTANCE;
+        }
     }
 
     public JsonbSerializer<Object> getJsonbSerializer(final Class<?> aClass)
