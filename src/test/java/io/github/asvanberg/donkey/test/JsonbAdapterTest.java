@@ -35,17 +35,17 @@ public class JsonbAdapterTest extends DefaultConfigurationTest {
         }
     }
 
-    public static class FailingStringAdapter implements JsonbAdapter<String, Object>
+    public static class FailingStringAdapter implements JsonbAdapter<String, Integer>
     {
         @Override
-        public Object adaptToJson(final String obj)
+        public Integer adaptToJson(final String obj)
                 throws Exception
         {
             throw new IOException();
         }
 
         @Override
-        public String adaptFromJson(final Object obj)
+        public String adaptFromJson(final Integer obj)
                 throws Exception
         {
             throw new IOException();
@@ -85,7 +85,7 @@ public class JsonbAdapterTest extends DefaultConfigurationTest {
     @Test
     public void failed_adapter_during_deserialization() {
         final String json = """
-                "hello"
+                123
                 """;
         assertThatThrownBy(() -> jsonb.fromJson(json, String.class))
                 .isInstanceOf(AdaptingFailedException.class)
