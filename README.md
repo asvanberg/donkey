@@ -25,7 +25,7 @@ An implementation of [Jakarta JSON processing](https://github.com/eclipse-ee4j/j
 <dependency>
   <groupId>io.github.asvanberg</groupId>
   <artifactId>donkey</artifactId>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
 </dependency>
 ```
 ### Java Platform Module System
@@ -56,8 +56,9 @@ and all parameters must be annotated with `@JsonbProperty` and have an explicit 
   * `Map<String, E>`
   * `Optional` (and primitive specializations)
   * Enums
+  * `java.net.URI`
   * Other types are treated as annotated objects according to the above paragraphs
-* [`@JsonbDateFormat`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbDateFormat.html) (not on `Instant`)
+* [`@JsonbDateFormat`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbDateFormat.html) (`Instant` only supports the special case [TIME_IN_MILLIS](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbDateFormat.html#TIME_IN_MILLIS))
 * Type-level [`@JsonbTypeAdapter`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbTypeAdapter.html)
 * Configured [`JsonbAdapters`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/adapter/JsonbAdapter.html)
 * Locale configuration which is relevant for certain date formats
