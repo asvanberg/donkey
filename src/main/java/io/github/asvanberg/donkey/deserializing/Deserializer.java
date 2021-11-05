@@ -132,6 +132,9 @@ public class Deserializer {
             }
         }
         else if (runtimeType instanceof CustomDateFormatType customDateFormatType) {
+            if (Objects.equals(JsonbDateFormat.TIME_IN_MILLIS, customDateFormatType.pattern())) {
+                return EpochMilliInstantDeserializer.INSTANCE;
+            }
             final Locale locale =
                     Objects.equals(JsonbDateFormat.DEFAULT_LOCALE, customDateFormatType.locale())
                             ? this.defaultLocale
