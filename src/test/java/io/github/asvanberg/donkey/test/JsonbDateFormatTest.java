@@ -1,11 +1,13 @@
 package io.github.asvanberg.donkey.test;
 
+import jakarta.json.JsonNumber;
 import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.annotation.JsonbCreator;
 import jakarta.json.bind.annotation.JsonbDateFormat;
 import jakarta.json.bind.annotation.JsonbProperty;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -17,6 +19,7 @@ import java.util.Locale;
 import static io.github.asvanberg.donkey.test.JsonValueAssert.assertThat;
 import static io.github.asvanberg.donkey.test.SerializationUtils.assertParsedJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.InstanceOfAssertFactories.LONG;
 
 public class JsonbDateFormatTest extends DefaultConfigurationTest {
 
@@ -276,5 +279,44 @@ public class JsonbDateFormatTest extends DefaultConfigurationTest {
         assertThat(differentLocales.date1())
                 .isEqualTo(differentLocales.date2())
                 .isEqualTo(FIRST_COMMIT.toLocalDate());
+    }
+
+    public record InstantAsMillis(
+            @JsonbDateFormat(JsonbDateFormat.TIME_IN_MILLIS)
+            @JsonbProperty("instant")
+            Instant instant)
+    {
+        @JsonbCreator
+        public InstantAsMillis
+        {
+        }
+    }
+
+    @Test
+    public void serialize_instant_as_millis()
+    {
+        final long epochMilli = 5897349234L;
+        final Instant instant = Instant.ofEpochMilli(epochMilli);
+        final InstantAsMillis instantAsMillis = new InstantAsMillis(instant);
+        final String json = jsonb.toJson(instantAsMillis);
+        assertParsedJson(json)
+                .isObject()
+                .hasEntrySatisfying("instant", jsonValue ->
+                        assertThat(jsonValue)
+                                .isNumber()
+                                .extracting(JsonNumber::longValueExact, LONG)
+                                .isEqualTo(epochMilli));
+    }
+
+    @Test
+    public void deserialize_instant_as_millis()
+    {
+        final long epochMilli = 5897349234L;
+        final String json = """
+                { "instant": %d }
+                """.formatted(epochMilli);
+        final InstantAsMillis instantAsMillis = jsonb.fromJson(json, InstantAsMillis.class);
+        assertThat(instantAsMillis.instant().toEpochMilli())
+                .isEqualTo(epochMilli);
     }
 }
