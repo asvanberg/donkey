@@ -14,12 +14,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
 abstract class Creator<T> {
-    static record Parameter(Type type, int index) {
+    static record Parameter(Type type, int index, String name) {
     }
 
     static <T> Creator<T> forClass(Class<T> clazz) {
@@ -49,7 +50,7 @@ abstract class Creator<T> {
             if (propertyName.isBlank()) {
                 throw new MissingExplicitJsonbPropertyValueException(parameter, executable);
             }
-            creationParameters.put(propertyName, new Parameter(getType(parameter), i));
+            creationParameters.put(propertyName, new Parameter(getType(parameter), i, propertyName));
         }
         return creationParameters;
     }
@@ -79,6 +80,10 @@ abstract class Creator<T> {
 
     Optional<Parameter> getParameterByName(String parameterName) {
         return Optional.ofNullable(parameters.get(parameterName));
+    }
+
+    Collection<Parameter> parameters() {
+        return parameters.values();
     }
 
     abstract T create(Object[] creationParameters);
