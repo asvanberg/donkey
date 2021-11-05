@@ -2,6 +2,7 @@ package io.github.asvanberg.donkey.deserializing;
 
 import io.github.asvanberg.donkey.exceptions.AdaptingFailedException;
 import io.github.asvanberg.donkey.internal.NullAdapter;
+import io.github.asvanberg.donkey.internal.URIStringJsonbAdapter;
 import io.github.asvanberg.donkey.internal.Util;
 import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.JsonbException;
@@ -14,6 +15,7 @@ import jakarta.json.stream.JsonParser;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -83,6 +85,7 @@ public class Deserializer {
 
     private void initializeAdapters(final JsonbConfig config)
     {
+        adapters.put(URI.class, new Adapter(String.class, URIStringJsonbAdapter.INSTANCE));
         final JsonbAdapter<?, ?>[] providedAdapters
                 = config.getProperty(JsonbConfig.ADAPTERS)
                         .map(s -> (JsonbAdapter<?, ?>[]) s)

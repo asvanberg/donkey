@@ -2,6 +2,7 @@ package io.github.asvanberg.donkey.serializing;
 
 import io.github.asvanberg.donkey.exceptions.AdaptingFailedException;
 import io.github.asvanberg.donkey.internal.NullAdapter;
+import io.github.asvanberg.donkey.internal.URIStringJsonbAdapter;
 import io.github.asvanberg.donkey.internal.Util;
 import io.github.asvanberg.donkey.serializing.RegisteredSerializer.Priority;
 import jakarta.json.JsonValue;
@@ -14,6 +15,7 @@ import jakarta.json.stream.JsonGenerator;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -104,6 +106,7 @@ public class Serializers implements SerializationContext
 
     private void initializeAdapters(final JsonbConfig config)
     {
+        adapters.put(URI.class, URIStringJsonbAdapter.INSTANCE);
         final JsonbAdapter<?, ?>[] providedAdapters
                 = config.getProperty(JsonbConfig.ADAPTERS)
                         .map(s -> (JsonbAdapter<?, ?>[]) s)
@@ -169,4 +172,5 @@ public class Serializers implements SerializationContext
                           .map(s -> (JsonbSerializer<Object>) s)
                           .orElse(ObjectSerializer.INSTANCE);
     }
+
 }
