@@ -13,7 +13,6 @@ import java.time.format.DateTimeFormatter;
 
 import static io.github.asvanberg.donkey.test.SerializationUtils.assertParsedJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.in;
 
 public class JavaTimeTest extends DefaultConfigurationTest {
     @Test

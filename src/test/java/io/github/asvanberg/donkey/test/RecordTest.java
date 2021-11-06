@@ -7,7 +7,6 @@ import net.jqwik.api.Property;
 import net.jqwik.api.constraints.UseType;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;

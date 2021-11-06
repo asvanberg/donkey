@@ -4,8 +4,6 @@ import io.github.asvanberg.donkey.deserializing.Deserializer;
 import io.github.asvanberg.donkey.exceptions.InternalProcessingException;
 import io.github.asvanberg.donkey.serializing.Serializers;
 import jakarta.json.bind.JsonbException;
-import jakarta.json.bind.serializer.JsonbSerializer;
-import jakarta.json.bind.serializer.SerializationContext;
 import jakarta.json.spi.JsonProvider;
 import jakarta.json.stream.JsonGenerator;
 

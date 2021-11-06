@@ -4,7 +4,6 @@ import io.github.asvanberg.donkey.exceptions.MissingExplicitJsonbPropertyValueEx
 import io.github.asvanberg.donkey.exceptions.MissingJsonbPropertyOnJsonbCreatorParameterException;
 import io.github.asvanberg.donkey.exceptions.MissingPropertyInJsonException;
 import io.github.asvanberg.donkey.exceptions.NoJsonbCreatorException;
-import jakarta.json.bind.JsonbException;
 import jakarta.json.bind.annotation.JsonbCreator;
 import jakarta.json.bind.annotation.JsonbProperty;
 import org.junit.jupiter.api.Test;
