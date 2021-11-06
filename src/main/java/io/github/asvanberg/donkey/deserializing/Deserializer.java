@@ -34,7 +34,7 @@ import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.function.Function;
 
-public class Deserializer {
+public class Deserializer implements DeserializationContext {
     private final Map<Class<?>, JsonbDeserializer<?>> deserializers
             = new HashMap<>();
     private final Map<Class<?>, Function<Type[], JsonbDeserializer<?>>> parameterizedDeserializers
@@ -149,51 +149,45 @@ public class Deserializer {
         throw new JsonbException(runtimeType + " not supported");
     }
 
-    public <T> T deserialize(final JsonParser parser, final Type runtimeType) {
-        return new DeserializationProcess().deserialize(runtimeType, parser);
+    @Override
+    public <T> T deserialize(final Class<T> clazz, final JsonParser parser) {
+        return deserialize((Type) clazz, parser);
     }
 
-    private class DeserializationProcess implements DeserializationContext {
-        @Override
-        public <T> T deserialize(final Class<T> clazz, final JsonParser parser) {
-            return deserialize((Type) clazz, parser);
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T deserialize(final Type type, final JsonParser parser) {
+        final Adapter adapter = adapters.computeIfAbsent(type, this::getAdapter);
+        if (adapter.jsonbAdapter() == NullAdapter.INSTANCE) {
+            final JsonbDeserializer<?> jsonbDeserializer
+                    = getUncheckedJsonbDeserializer(type);
+            return (T) jsonbDeserializer.deserialize(parser, this, type);
         }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public <T> T deserialize(final Type type, final JsonParser parser) {
-            final Adapter adapter = adapters.computeIfAbsent(type, this::getAdapter);
-            if (adapter.jsonbAdapter() == NullAdapter.INSTANCE) {
-                final JsonbDeserializer<?> jsonbDeserializer
-                        = getUncheckedJsonbDeserializer(type);
-                return (T) jsonbDeserializer.deserialize(parser, this, type);
-            }
-            final Object adapted = deserialize(adapter.adaptedType(), parser);
-            try {
-                final JsonbAdapter<T, Object> jsonbAdapter
-                        = (JsonbAdapter<T, Object>) adapter.jsonbAdapter();
-                return jsonbAdapter.adaptFromJson(adapted);
-            } catch (Exception e) {
-                throw new AdaptingFailedException(e);
-            }
+        final Object adapted = deserialize(adapter.adaptedType(), parser);
+        try {
+            final JsonbAdapter<T, Object> jsonbAdapter
+                    = (JsonbAdapter<T, Object>) adapter.jsonbAdapter();
+            return jsonbAdapter.adaptFromJson(adapted);
+        } catch (Exception e) {
+            throw new AdaptingFailedException(e);
         }
+    }
 
-        private Adapter getAdapter(final Type type)
+    private Adapter getAdapter(final Type type)
+    {
+        final JsonbTypeAdapter jsonbTypeAdapter;
+        if (type instanceof Class<?> clazz
+                && (jsonbTypeAdapter = clazz.getAnnotation(JsonbTypeAdapter.class)) != null)
         {
-            final JsonbTypeAdapter jsonbTypeAdapter;
-            if (type instanceof Class<?> clazz
-                    && (jsonbTypeAdapter = clazz.getAnnotation(JsonbTypeAdapter.class)) != null)
-            {
-                final JsonbAdapter<?, ?> jsonbAdapter = Util.createJsonbAdapter(jsonbTypeAdapter);
-                final ParameterizedType parameterizedType
-                        = Util.getParameterizedType(jsonbAdapter, JsonbAdapter.class)
-                              .orElseThrow(() -> new AdaptingFailedException(null));
-                final Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-                return new Adapter(actualTypeArguments[1], jsonbAdapter);
-            }
-            else {
-                return new Adapter(type, NullAdapter.INSTANCE);
-            }
+            final JsonbAdapter<?, ?> jsonbAdapter = Util.createJsonbAdapter(jsonbTypeAdapter);
+            final ParameterizedType parameterizedType
+                    = Util.getParameterizedType(jsonbAdapter, JsonbAdapter.class)
+                          .orElseThrow(() -> new AdaptingFailedException(null));
+            final Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+            return new Adapter(actualTypeArguments[1], jsonbAdapter);
+        }
+        else {
+            return new Adapter(type, NullAdapter.INSTANCE);
         }
     }
 }

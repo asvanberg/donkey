@@ -55,7 +55,7 @@ class Donkey extends JsonbUnifier {
     {
         try (var parser = provider.createParser(reader))
         {
-            return deserializer.deserialize(parser, runtimeType);
+            return deserializer.deserialize(runtimeType, parser);
         }
         catch (JsonbException jsonbException)
         {
