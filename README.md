@@ -62,3 +62,13 @@ and all parameters must be annotated with `@JsonbProperty` and have an explicit 
 * Type-level [`@JsonbTypeAdapter`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbTypeAdapter.html)
 * Configured [`JsonbAdapters`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/adapter/JsonbAdapter.html)
 * Locale configuration which is relevant for certain date formats
+
+## Benchmark
+Using Donkey 1.1.0 and Yasson 2.0.2.
+![Benchmark comparing Donkey and Yasson](benchmark/donkey-1.1.0-yasson-2.0.2.png)
+
+### Running the benchmark
+```
+mvnw -f benchmark/pom.xml clean package
+java -jar benchmark/target/benchmarks.jar
+```
