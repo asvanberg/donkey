@@ -25,7 +25,7 @@ An implementation of [Jakarta JSON processing](https://github.com/eclipse-ee4j/j
 <dependency>
   <groupId>io.github.asvanberg</groupId>
   <artifactId>donkey</artifactId>
-  <version>1.1.0</version>
+  <version>1.2.0</version>
 </dependency>
 ```
 ### Java Platform Module System
@@ -57,6 +57,7 @@ and all parameters must be annotated with `@JsonbProperty` and have an explicit 
   * `Optional` (and primitive specializations)
   * Enums
   * `java.net.URI`
+  * `java.util.UUID`
   * Other types (**including records**) are treated as annotated objects according to the above paragraphs
 * [`@JsonbDateFormat`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbDateFormat.html) (`Instant` only supports the special case [TIME_IN_MILLIS](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbDateFormat.html#TIME_IN_MILLIS))
 * Type-level [`@JsonbTypeAdapter`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbTypeAdapter.html)
@@ -64,8 +65,8 @@ and all parameters must be annotated with `@JsonbProperty` and have an explicit 
 * Locale configuration which is relevant for certain date formats
 
 ## Benchmark
-Using Donkey 1.1.0 and Yasson 2.0.2.
-![Benchmark comparing Donkey and Yasson](benchmark/donkey-1.1.0-yasson-2.0.2.png)
+Using Donkey 1.2.0 and Yasson 2.0.2.
+![Benchmark comparing Donkey and Yasson](benchmark/donkey-1.2.0-yasson-2.0.2.png)
 
 ### Running the benchmark
 ```
