@@ -57,7 +57,7 @@ and all parameters must be annotated with `@JsonbProperty` and have an explicit 
   * `Optional` (and primitive specializations)
   * Enums
   * `java.net.URI`
-  * Other types are treated as annotated objects according to the above paragraphs
+  * Other types (**including records**) are treated as annotated objects according to the above paragraphs
 * [`@JsonbDateFormat`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbDateFormat.html) (`Instant` only supports the special case [TIME_IN_MILLIS](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbDateFormat.html#TIME_IN_MILLIS))
 * Type-level [`@JsonbTypeAdapter`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/annotation/JsonbTypeAdapter.html)
 * Configured [`JsonbAdapters`](https://javadoc.io/static/jakarta.json.bind/jakarta.json.bind-api/2.0.0/jakarta/json/bind/adapter/JsonbAdapter.html)
