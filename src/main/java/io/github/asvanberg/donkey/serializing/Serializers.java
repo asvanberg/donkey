@@ -5,7 +5,6 @@ import io.github.asvanberg.donkey.internal.NullAdapter;
 import io.github.asvanberg.donkey.internal.URIStringJsonbAdapter;
 import io.github.asvanberg.donkey.internal.UUIDStringJsonbAdapter;
 import io.github.asvanberg.donkey.internal.Util;
-import io.github.asvanberg.donkey.serializing.RegisteredSerializer.Priority;
 import jakarta.json.JsonValue;
 import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.adapter.JsonbAdapter;
@@ -22,9 +21,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -37,7 +34,7 @@ import java.util.UUID;
 @SuppressWarnings("unchecked")
 public class Serializers implements SerializationContext
 {
-    private final Collection<RegisteredSerializer> serializers = new ArrayList<>();
+    private final Map<Class<?>, JsonbSerializer<?>> serializers = new HashMap<>();
     private final Map<Class<?>, JsonbAdapter<?, ?>> adapters = new HashMap<>();
     private final Locale locale;
 
@@ -52,37 +49,41 @@ public class Serializers implements SerializationContext
 
     private void initializeSerializers(final JsonbConfig config)
     {
+        registerBuiltInSerializers();
         final JsonbSerializer<?>[] providedSerializers = config.getProperty(JsonbConfig.SERIALIZERS)
                                                                .map(s -> (JsonbSerializer<?>[]) s)
                                                                .orElse(new JsonbSerializer[0]);
         for (JsonbSerializer<?> providedSerializer : providedSerializers)
         {
             getFirstTypeArgumentForInterface(providedSerializer, JsonbSerializer.class)
-                    .ifPresent(handledType ->
-                                     register(providedSerializer, handledType, Priority.CONFIGURED));
+                    .ifPresent(handledType -> serializers.put(handledType, providedSerializer));
         }
-        register(StringSerializer.INSTANCE, String.class, Priority.BUILT_IN);
-        register(IntSerializer.INSTANCE, Integer.class, Priority.BUILT_IN);
-        register(BigDecimalSerializer.INSTANCE, BigDecimal.class, Priority.BUILT_IN);
-        register(BigIntegerSerializer.INSTANCE, BigInteger.class, Priority.BUILT_IN);
-        register(BooleanSerializer.INSTANCE, Boolean.class, Priority.BUILT_IN);
-        register(LongSerializer.INSTANCE, Long.class, Priority.BUILT_IN);
-        register(CollectionSerializer.INSTANCE, Collection.class, Priority.BUILT_IN);
-        register(DoubleSerializer.INSTANCE, Double.class, Priority.BUILT_IN);
-        register(FloatSerializer.INSTANCE, Float.class, Priority.BUILT_IN);
-        register(JsonValueSerializer.INSTANCE, JsonValue.class, Priority.BUILT_IN);
-        register(OptionalIntSerializer.INSTANCE, OptionalInt.class, Priority.BUILT_IN);
-        register(OptionalLongSerializer.INSTANCE, OptionalLong.class, Priority.BUILT_IN);
-        register(OptionalDoubleSerializer.INSTANCE, OptionalDouble.class, Priority.BUILT_IN);
-        register(OptionalSerializer.INSTANCE, Optional.class, Priority.BUILT_IN);
-        register(MapSerializer.INSTANCE, Map.class, Priority.BUILT_IN);
-        register(InstantSerializer.INSTANCE, Instant.class, Priority.BUILT_IN);
-        register(OffsetDateTimeSerializer.INSTANCE, OffsetDateTime.class, Priority.BUILT_IN);
-        register(LocalDateTimeSerializer.INSTANCE, LocalDateTime.class, Priority.BUILT_IN);
-        register(LocalDateSerializer.INSTANCE, LocalDate.class, Priority.BUILT_IN);
-        register(LocalTimeSerializer.INSTANCE, LocalTime.class, Priority.BUILT_IN);
-        register(EnumSerializer.INSTANCE, Enum.class, Priority.BUILT_IN);
-        register(new TemporalAccessorSerializer(locale), TemporalAccessorProperty.class, Priority.BUILT_IN);
+    }
+
+    private void registerBuiltInSerializers()
+    {
+        serializers.put(String.class, StringSerializer.INSTANCE);
+        serializers.put(Integer.class, IntSerializer.INSTANCE);
+        serializers.put(BigDecimal.class, BigDecimalSerializer.INSTANCE);
+        serializers.put(BigInteger.class, BigIntegerSerializer.INSTANCE);
+        serializers.put(Boolean.class, BooleanSerializer.INSTANCE);
+        serializers.put(Long.class, LongSerializer.INSTANCE);
+        serializers.put(Collection.class, CollectionSerializer.INSTANCE);
+        serializers.put(Double.class, DoubleSerializer.INSTANCE);
+        serializers.put(Float.class, FloatSerializer.INSTANCE);
+        serializers.put(JsonValue.class, JsonValueSerializer.INSTANCE);
+        serializers.put(OptionalInt.class, OptionalIntSerializer.INSTANCE);
+        serializers.put(OptionalLong.class, OptionalLongSerializer.INSTANCE);
+        serializers.put(OptionalDouble.class, OptionalDoubleSerializer.INSTANCE);
+        serializers.put(Optional.class, OptionalSerializer.INSTANCE);
+        serializers.put(Map.class, MapSerializer.INSTANCE);
+        serializers.put(Instant.class, InstantSerializer.INSTANCE);
+        serializers.put(OffsetDateTime.class, OffsetDateTimeSerializer.INSTANCE);
+        serializers.put(LocalDateTime.class, LocalDateTimeSerializer.INSTANCE);
+        serializers.put(LocalDate.class, LocalDateSerializer.INSTANCE);
+        serializers.put(LocalTime.class, LocalTimeSerializer.INSTANCE);
+        serializers.put(Enum.class, EnumSerializer.INSTANCE);
+        serializers.put(TemporalAccessorProperty.class, new TemporalAccessorSerializer(locale));
     }
 
     private static Optional<Class<?>> getFirstTypeArgumentForInterface(
@@ -96,14 +97,6 @@ public class Serializers implements SerializationContext
                    .map(pt -> pt.getActualTypeArguments()[0])
                    .filter(Class.class::isInstance)
                    .map(Class.class::cast);
-    }
-
-    private void register(
-            final JsonbSerializer<?> providedSerializer,
-            final Class<?> handledType,
-            final Priority configured)
-    {
-        serializers.add(new RegisteredSerializer(configured, handledType, providedSerializer));
     }
 
     private void initializeAdapters(final JsonbConfig config)
@@ -138,7 +131,8 @@ public class Serializers implements SerializationContext
                 serialize(adapted, generator);
             }
             else {
-                final JsonbSerializer<Object> serializer = getJsonbSerializer(adapted.getClass());
+                final JsonbSerializer<Object> serializer
+                        = (JsonbSerializer<Object>) getJsonbSerializer(adapted.getClass());
                 serializer.serialize(adapted, generator, this);
             }
         }
@@ -166,14 +160,19 @@ public class Serializers implements SerializationContext
         }
     }
 
-    public JsonbSerializer<Object> getJsonbSerializer(final Class<?> aClass)
+    public JsonbSerializer<?> getJsonbSerializer(final Class<?> aClass)
     {
-        return serializers.stream()
-                          .filter(rs -> rs.supports(aClass))
-                          .max(Comparator.comparing(RegisteredSerializer::priority))
-                          .map(RegisteredSerializer::serializer)
-                          .map(s -> (JsonbSerializer<Object>) s)
-                          .orElse(ObjectSerializer.INSTANCE);
+        final JsonbSerializer<?> serializer = serializers.get(aClass);
+        if (serializer != null) {
+            return serializer;
+        }
+        for (final var entry : serializers.entrySet()) {
+            if (entry.getKey().isAssignableFrom(aClass)) {
+                serializers.put(aClass, entry.getValue());
+                return entry.getValue();
+            }
+        }
+        return serializers.computeIfAbsent(aClass, ObjectSerializer::of);
     }
 
 }
