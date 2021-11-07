@@ -3,6 +3,7 @@ package io.github.asvanberg.donkey.deserializing;
 import io.github.asvanberg.donkey.exceptions.AdaptingFailedException;
 import io.github.asvanberg.donkey.internal.NullAdapter;
 import io.github.asvanberg.donkey.internal.URIStringJsonbAdapter;
+import io.github.asvanberg.donkey.internal.UUIDStringJsonbAdapter;
 import io.github.asvanberg.donkey.internal.Util;
 import jakarta.json.bind.JsonbConfig;
 import jakarta.json.bind.JsonbException;
@@ -32,6 +33,7 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class Deserializer implements DeserializationContext {
@@ -86,6 +88,7 @@ public class Deserializer implements DeserializationContext {
     private void initializeAdapters(final JsonbConfig config)
     {
         adapters.put(URI.class, new Adapter(String.class, URIStringJsonbAdapter.INSTANCE));
+        adapters.put(UUID.class, new Adapter(String.class, UUIDStringJsonbAdapter.INSTANCE));
         final JsonbAdapter<?, ?>[] providedAdapters
                 = config.getProperty(JsonbConfig.ADAPTERS)
                         .map(s -> (JsonbAdapter<?, ?>[]) s)
