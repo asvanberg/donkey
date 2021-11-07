@@ -172,8 +172,7 @@ public class Serializers implements SerializationContext
                 return entry.getValue();
             }
         }
-        serializers.put(aClass, ObjectSerializer.INSTANCE);
-        return ObjectSerializer.INSTANCE;
+        return serializers.computeIfAbsent(aClass, ObjectSerializer::of);
     }
 
 }

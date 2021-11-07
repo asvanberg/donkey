@@ -12,23 +12,26 @@ import jakarta.json.stream.JsonGenerator;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.temporal.TemporalAccessor;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.logging.Logger;
 
-public enum ObjectSerializer implements JsonbSerializer<Object> {
-    INSTANCE;
+class ObjectSerializer implements JsonbSerializer<Object> {
 
     private static final Logger LOG = Logger.getLogger(ObjectSerializer.class.getName());
 
-    @Override
+    record Property(String name, boolean nillable, Method method, JsonbSerializer<Object> serializer)
+    {
+    }
+
     @SuppressWarnings("unchecked")
-    public void serialize(final Object obj, final JsonGenerator generator, final SerializationContext ctx) {
-        generator.writeStartObject();
-        boolean foundProperty = false;
-        for (Method method : obj.getClass().getMethods()) {
+    static ObjectSerializer of(Class<?> clazz) {
+        final List<Property> properties = new ArrayList<>();
+        for (Method method : clazz.getMethods()) {
             final JsonbProperty jsonbProperty = method.getAnnotation(JsonbProperty.class);
             if (jsonbProperty == null) {
                 LOG.fine(() -> "Skipping method [%s] due to no JsonbProperty annotation".formatted(method.getName()));
@@ -39,34 +42,66 @@ public enum ObjectSerializer implements JsonbSerializer<Object> {
                 LOG.fine(() -> "Skipping method [%s] due to no value specified on JsonbProperty annotation".formatted(method.getName()));
                 continue;
             }
+            final boolean nillable = jsonbProperty.nillable();
+            JsonbSerializer<Object> serializer = null;
+            final JsonbTypeSerializer jsonbTypeSerializer = method.getAnnotation(JsonbTypeSerializer.class);
+            if (jsonbTypeSerializer != null) {
+                try {
+                    serializer = jsonbTypeSerializer
+                            .value()
+                            .getConstructor()
+                            .newInstance();
+                }
+                catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    throw new JsonbException("Failed to serialize property [" + propertyName + "] of class [" + clazz + "]", e);
+                }
+            }
+            properties.add(new Property(propertyName, nillable, method, serializer));
+        }
+        if (properties.isEmpty()) {
+            throw new NoPropertiesToSerializeException(clazz);
+        }
+        return new ObjectSerializer(properties);
+    }
+
+    private final List<Property> properties;
+
+    private ObjectSerializer(final List<Property> properties)
+    {
+        this.properties = properties;
+    }
+
+    @Override
+    public void serialize(final Object obj, final JsonGenerator generator, final SerializationContext ctx) {
+        generator.writeStartObject();
+        for (final Property property : properties) {
+            final String propertyName = property.name();
             try {
-                foundProperty = true;
-                final Object value = method.invoke(obj);
-                if (!jsonbProperty.nillable() && isNull(value)) {
+                final Object value = property.method().invoke(obj);
+                if (!property.nillable() && isNull(value)) {
                     LOG.finer(() -> "Skipping property [%s] due to null value and not nillable".formatted(propertyName));
                     continue;
                 }
-                final JsonbTypeSerializer jsonbTypeSerializer = method.getAnnotation(JsonbTypeSerializer.class);
-                if (jsonbTypeSerializer != null) {
-                    final JsonbSerializer<Object> serializer = jsonbTypeSerializer.value().getConstructor().newInstance();
+                final JsonbSerializer<Object> serializer = property.serializer();
+                if (serializer != null) {
                     generator.writeKey(propertyName);
                     serializer.serialize(value, generator, ctx);
-                } else {
+                }
+                else {
                     if (value instanceof TemporalAccessor temporalAccessor) {
                         final TemporalAccessorProperty temporalAccessorProperty =
-                                buildTemporalAccessProperty(method, temporalAccessor);
+                                buildTemporalAccessProperty(property.method(), temporalAccessor);
                         ctx.serialize(propertyName, temporalAccessorProperty, generator);
                     }
                     else {
                         ctx.serialize(propertyName, value, generator);
                     }
                 }
-            } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException | InstantiationException e) {
-                throw new JsonbException("Failed to serialize property [" + propertyName + "] of class [" + obj.getClass() + "]", e);
             }
-        }
-        if (!foundProperty) {
-            throw new NoPropertiesToSerializeException(obj.getClass());
+            catch (IllegalAccessException | InvocationTargetException e) {
+                throw new JsonbException("Failed to serialize property [" + propertyName + "] of class [" + obj.getClass() + "]",
+                                         e);
+            }
         }
         generator.writeEnd();
     }
