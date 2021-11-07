@@ -3,6 +3,7 @@ package io.github.asvanberg.donkey.serializing;
 import io.github.asvanberg.donkey.exceptions.AdaptingFailedException;
 import io.github.asvanberg.donkey.internal.NullAdapter;
 import io.github.asvanberg.donkey.internal.URIStringJsonbAdapter;
+import io.github.asvanberg.donkey.internal.UUIDStringJsonbAdapter;
 import io.github.asvanberg.donkey.internal.Util;
 import io.github.asvanberg.donkey.serializing.RegisteredSerializer.Priority;
 import jakarta.json.JsonValue;
@@ -31,6 +32,7 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.UUID;
 
 @SuppressWarnings("unchecked")
 public class Serializers implements SerializationContext
@@ -107,6 +109,7 @@ public class Serializers implements SerializationContext
     private void initializeAdapters(final JsonbConfig config)
     {
         adapters.put(URI.class, URIStringJsonbAdapter.INSTANCE);
+        adapters.put(UUID.class, UUIDStringJsonbAdapter.INSTANCE);
         final JsonbAdapter<?, ?>[] providedAdapters
                 = config.getProperty(JsonbConfig.ADAPTERS)
                         .map(s -> (JsonbAdapter<?, ?>[]) s)
