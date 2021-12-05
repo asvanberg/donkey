@@ -1,3 +1,6 @@
+[![Build](https://github.com/asvanberg/donkey/actions/workflows/maven.yaml/badge.svg)](https://github.com/asvanberg/donkey/actions/workflows/maven.yaml)
+[![Code coverage](https://codecov.io/gh/asvanberg/donkey/branch/main/graph/badge.svg?token=JJY803064A)](https://codecov.io/gh/asvanberg/donkey)
+
 # Donkey
 Opinionated implementation of the [Jakarta JSON binding API](https://github.com/eclipse-ee4j/jsonb-api).
 It is *not* spec compliant and requires explicit configuration with annotations
