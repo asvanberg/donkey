@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: Build
 
 on:
   push:
@@ -11,11 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set up JDK 11
+      - name: Set up JDK
         uses: actions/setup-java@v2
         with:
           java-version: '17'
           distribution: 'adopt'
           cache: maven
       - name: Build with Maven
-        run: mvn -B verify --file pom.xml
+        run: mvn -B clean verify -P coverage --no-transfer-progress --file pom.xml
+      - uses: codecov/codecov-action@v2
+        with:
+          files: ./target/site/jacoco/jacoco.xml
