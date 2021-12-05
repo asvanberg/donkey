@@ -1,6 +1,5 @@
 package io.github.asvanberg.donkey.deserializing;
 
-import io.github.asvanberg.donkey.exceptions.InternalProcessingException;
 import io.github.asvanberg.donkey.exceptions.MissingExplicitJsonbPropertyValueException;
 import io.github.asvanberg.donkey.exceptions.MissingJsonbPropertyOnJsonbCreatorParameterException;
 import io.github.asvanberg.donkey.exceptions.NoJsonbCreatorException;
@@ -10,10 +9,11 @@ import jakarta.json.bind.annotation.JsonbProperty;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.RecordComponent;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,6 +33,16 @@ abstract class Creator<T> {
             if (method.isAnnotationPresent(JsonbCreator.class) && Modifier.isStatic(method.getModifiers())) {
                 return new MethodCreator<>(getParameters(method), method);
             }
+        }
+        if (clazz.isRecord()) {
+            return Util.throwing(() -> {
+                final Class<?>[] paramTypes
+                        = Arrays.stream(clazz.getRecordComponents())
+                                .map(RecordComponent::getType)
+                                .toArray(Class<?>[]::new);
+                final Constructor<T> constructor = clazz.getDeclaredConstructor(paramTypes);
+                return new ConstructorCreator<>(getParameters(constructor), constructor);
+            });
         }
         throw new NoJsonbCreatorException(clazz);
     }
@@ -99,12 +109,7 @@ abstract class Creator<T> {
         @SuppressWarnings("unchecked")
         @Override
         T create(final Object[] creationParameters) {
-            try {
-                return (T) constructor.newInstance(creationParameters);
-            }
-            catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-                throw new InternalProcessingException(e);
-            }
+            return Util.throwing(() -> (T) constructor.newInstance(creationParameters));
         }
     }
 
@@ -119,12 +124,7 @@ abstract class Creator<T> {
         @SuppressWarnings("unchecked")
         @Override
         T create(final Object[] creationParameters) {
-            try {
-                return (T) method.invoke(null, creationParameters);
-            }
-            catch (IllegalAccessException | InvocationTargetException e) {
-                throw new InternalProcessingException(e);
-            }
+            return Util.throwing(() -> (T) method.invoke(null, creationParameters));
         }
     }
 

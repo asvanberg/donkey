@@ -1,5 +1,6 @@
 package io.github.asvanberg.donkey.test;
 
+import io.github.asvanberg.donkey.exceptions.InternalProcessingException;
 import io.github.asvanberg.donkey.exceptions.MissingExplicitJsonbPropertyValueException;
 import io.github.asvanberg.donkey.exceptions.MissingJsonbPropertyOnJsonbCreatorParameterException;
 import io.github.asvanberg.donkey.exceptions.MissingPropertyInJsonException;
@@ -8,6 +9,7 @@ import jakarta.json.bind.annotation.JsonbCreator;
 import jakarta.json.bind.annotation.JsonbProperty;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +45,7 @@ public class JsonbCreatorTest extends DefaultConfigurationTest {
         assertThat(point).extracting(Point::y).isEqualTo(2);
     }
 
-    public static record MissingJsonbCreator(int x) {
+    public static class MissingJsonbCreator {
     }
 
     @Test
@@ -234,5 +236,66 @@ public class JsonbCreatorTest extends DefaultConfigurationTest {
         final TestRecord testRecord = jsonb.fromJson(json, TestRecord.class);
         assertThat(testRecord.weight())
                 .isEmpty();
+    }
+
+    public static record CanonicalConstructor(@JsonbProperty("name") String name)
+    {
+    }
+
+    @Test
+    public void tries_canonical_constructor_for_records()
+    {
+        final String json = """
+                { "name": "Bob"
+                }
+                """;
+        final CanonicalConstructor canonicalConstructor
+                = jsonb.fromJson(json, CanonicalConstructor.class);
+
+        assertThat(canonicalConstructor)
+                .isEqualTo(new CanonicalConstructor("Bob"));
+    }
+
+    public static class CreatorMethodRuntimeErrors
+    {
+        @JsonbCreator
+        public CreatorMethodRuntimeErrors(@JsonbProperty("name") String name)
+        {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    @Test
+    public void throws_correct_exception_with_cause_if_creator_method_fails()
+    {
+        final String json = """
+                { "name": "Bob"
+                }
+                """;
+        assertThatThrownBy(() -> jsonb.fromJson(json, CreatorMethodRuntimeErrors.class))
+                .isInstanceOf(InternalProcessingException.class)
+                .hasRootCauseInstanceOf(IllegalArgumentException.class);
+    }
+
+    public static class CreatorMethodCheckedErrors
+    {
+        @JsonbCreator
+        public static CreatorMethodCheckedErrors build(@JsonbProperty("name") String name)
+                throws IOException
+        {
+            throw new IOException();
+        }
+    }
+
+    @Test
+    public void throws_correct_exception_with_cause_if_creator_method_fails_checked()
+    {
+        final String json = """
+                { "name": "Bob"
+                }
+                """;
+        assertThatThrownBy(() -> jsonb.fromJson(json, CreatorMethodCheckedErrors.class))
+                .isInstanceOf(InternalProcessingException.class)
+                .hasRootCauseInstanceOf(IOException.class);
     }
 }
