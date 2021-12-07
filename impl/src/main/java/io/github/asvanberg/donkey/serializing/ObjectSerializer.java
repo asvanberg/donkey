@@ -29,7 +29,13 @@ class ObjectSerializer implements JsonbSerializer<Object> {
     }
 
     @SuppressWarnings("unchecked")
-    static ObjectSerializer of(Class<?> clazz) {
+    static JsonbSerializer<Object> of(Class<?> clazz) {
+        // check if there's an apt generated serializer
+        try {
+            final String serializerClassName = clazz.getName() + "$donkey$apt$serializer";
+            return (JsonbSerializer<Object>) Class.forName(serializerClassName)
+                                                  .getConstructor().newInstance();
+        } catch (Exception ignored) {}
         final List<Property> properties = new ArrayList<>();
         for (Method method : clazz.getMethods()) {
             final JsonbProperty jsonbProperty = method.getAnnotation(JsonbProperty.class);
