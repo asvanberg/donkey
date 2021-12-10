@@ -23,17 +23,37 @@ This library uses reflection so your classes used for (de-)serialization must th
 Write your application against the Jakarta JSON binding API. Make Donkey available during runtime, and it will be used
 as the provider. 
 An implementation of [Jakarta JSON processing](https://github.com/eclipse-ee4j/jsonp) must also be available during runtime.
+
+### Annotation processing
+Donkey comes with an annotation processing module located at `io.github.asvanberg:donkey-apt`.
+It is *highly* recommended using this module as it increases serialization performance.
+
+If you are building a modular application you have to explicitly configure the annotation processor by adding the
+artifact coordinates to the Maven compiler configuration using [annotation processor paths](https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html#annotationProcessorPaths).
+You also need to add `requires static io.github.asvanberg.donkey.apt` to `module-info.java`.
+
+Non-modular apps requires no extra configuration besides adding the provided dependency.
+
 ### Maven
 ```xml
-<dependency>
-  <groupId>io.github.asvanberg</groupId>
-  <artifactId>donkey</artifactId>
-  <version>1.2.0</version>
-</dependency>
+<dependencies>
+  <dependency>
+    <groupId>io.github.asvanberg</groupId>
+    <artifactId>donkey</artifactId>
+    <version>1.3.0-SNAPSHOT</version>
+  </dependency>
+  <dependency>
+    <groupId>io.github.asvanberg</groupId>
+    <artifactId>donkey-apt</artifactId>
+    <version>1.3.0-SNAPSHOT</version>
+    <scope>provided</scope>
+  </dependency>
+</dependencies>
 ```
 ### Java Platform Module System
 ```
 requires io.github.asvanberg.donkey;
+requires static io.github.asvanberg.donkey.apt
 ```
 
 ## Serializing
@@ -68,8 +88,8 @@ and all parameters must be annotated with `@JsonbProperty` and have an explicit 
 * Locale configuration which is relevant for certain date formats
 
 ## Benchmark
-Using Donkey 1.2.0 and Yasson 2.0.2.
-![Benchmark comparing Donkey and Yasson](benchmark/donkey-1.2.0-yasson-2.0.2.png)
+Using Donkey 1.3.0-SNAPSHOT (with annotation processing) and Yasson 2.0.2.
+![Benchmark comparing Donkey and Yasson](benchmark/donkey-1.3.0-SNAPSHOT-yasson-2.0.2.png)
 
 ### Running the benchmark
 ```
