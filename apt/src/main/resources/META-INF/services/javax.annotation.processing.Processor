@@ -1,1 +1,2 @@
 io.github.asvanberg.donkey.apt.JsonbSerializerGenerator
+io.github.asvanberg.donkey.apt.CheckJsonbPropertyValue
