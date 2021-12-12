@@ -26,7 +26,9 @@ An implementation of [Jakarta JSON processing](https://github.com/eclipse-ee4j/j
 
 ### Annotation processing
 Donkey comes with an annotation processing module located at `io.github.asvanberg:donkey-apt`.
-It is *highly* recommended using this module as it increases serialization performance.
+It is *highly* recommended using this module as it;
+* increases serialization performance
+* checks usage of annotations to turn what would be runtime errors into compile time errors
 
 If you are building a modular application you have to explicitly configure the annotation processor by adding the
 artifact coordinates to the Maven compiler configuration using [annotation processor paths](https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html#annotationProcessorPaths).
