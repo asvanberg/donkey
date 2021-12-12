@@ -7,7 +7,6 @@
 module io.github.asvanberg.donkey {
     requires transitive jakarta.json.bind;
     requires jakarta.json;
-    requires java.logging;
 
     uses jakarta.json.spi.JsonProvider;
 

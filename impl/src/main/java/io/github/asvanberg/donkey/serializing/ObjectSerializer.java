@@ -18,11 +18,8 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
-import java.util.logging.Logger;
 
 class ObjectSerializer implements JsonbSerializer<Object> {
-
-    private static final Logger LOG = Logger.getLogger(ObjectSerializer.class.getName());
 
     record Property(String name, boolean nillable, Method method, JsonbSerializer<Object> serializer)
     {
@@ -40,12 +37,11 @@ class ObjectSerializer implements JsonbSerializer<Object> {
         for (Method method : clazz.getMethods()) {
             final JsonbProperty jsonbProperty = method.getAnnotation(JsonbProperty.class);
             if (jsonbProperty == null) {
-                LOG.fine(() -> "Skipping method [%s] due to no JsonbProperty annotation".formatted(method.getName()));
                 continue;
             }
             final String propertyName = jsonbProperty.value();
             if (propertyName.isEmpty()) {
-                LOG.fine(() -> "Skipping method [%s] due to no value specified on JsonbProperty annotation".formatted(method.getName()));
+                // TODO: error in 2.x
                 continue;
             }
             final boolean nillable = jsonbProperty.nillable();
@@ -85,7 +81,6 @@ class ObjectSerializer implements JsonbSerializer<Object> {
             try {
                 final Object value = property.method().invoke(obj);
                 if (!property.nillable() && isNull(value)) {
-                    LOG.finer(() -> "Skipping property [%s] due to null value and not nillable".formatted(propertyName));
                     continue;
                 }
                 final JsonbSerializer<Object> serializer = property.serializer();
