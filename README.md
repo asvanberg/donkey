@@ -1,3 +1,4 @@
+[![Maven central](https://img.shields.io/maven-central/v/io.github.asvanberg/donkey?color=success&label=Maven)](https://search.maven.org/artifact/io.github.asvanberg/donkey)
 [![Build](https://github.com/asvanberg/donkey/actions/workflows/maven.yaml/badge.svg)](https://github.com/asvanberg/donkey/actions/workflows/maven.yaml)
 [![Code coverage](https://codecov.io/gh/asvanberg/donkey/branch/main/graph/badge.svg?token=JJY803064A)](https://codecov.io/gh/asvanberg/donkey)
 
@@ -26,9 +27,7 @@ An implementation of [Jakarta JSON processing](https://github.com/eclipse-ee4j/j
 
 ### Annotation processing
 Donkey comes with an annotation processing module located at `io.github.asvanberg:donkey-apt`.
-It is *highly* recommended using this module as it;
-* increases serialization performance
-* checks usage of annotations to turn what would be runtime errors into compile time errors
+It is *highly* recommended using this module as it increases serialization performance.
 
 If you are building a modular application you have to explicitly configure the annotation processor by adding the
 artifact coordinates to the Maven compiler configuration using [annotation processor paths](https://maven.apache.org/plugins/maven-compiler-plugin/compile-mojo.html#annotationProcessorPaths).
@@ -42,12 +41,12 @@ Non-modular apps requires no extra configuration besides adding the provided dep
   <dependency>
     <groupId>io.github.asvanberg</groupId>
     <artifactId>donkey</artifactId>
-    <version>1.3.0-SNAPSHOT</version>
+    <version>1.3.0</version>
   </dependency>
   <dependency>
     <groupId>io.github.asvanberg</groupId>
     <artifactId>donkey-apt</artifactId>
-    <version>1.3.0-SNAPSHOT</version>
+    <version>1.3.0</version>
     <scope>provided</scope>
   </dependency>
 </dependencies>
@@ -90,8 +89,8 @@ and all parameters must be annotated with `@JsonbProperty` and have an explicit 
 * Locale configuration which is relevant for certain date formats
 
 ## Benchmark
-Using Donkey 1.3.0-SNAPSHOT (with annotation processing) and Yasson 2.0.2.
-![Benchmark comparing Donkey and Yasson](benchmark/donkey-1.3.0-SNAPSHOT-yasson-2.0.2.png)
+Using Donkey 1.3.0 (with annotation processing) and Yasson 2.0.2.
+![Benchmark comparing Donkey and Yasson](benchmark/donkey-1.3.0-yasson-2.0.2.png)
 
 ### Running the benchmark
 ```
