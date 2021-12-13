@@ -26,6 +26,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -34,13 +35,12 @@ import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
 import java.util.UUID;
-import java.util.function.Function;
 
 public class Deserializer implements DeserializationContext {
     private final Map<Class<?>, JsonbDeserializer<?>> deserializers
             = new HashMap<>();
-    private final Map<Class<?>, Function<Type[], JsonbDeserializer<?>>> parameterizedDeserializers
-            = new HashMap<>();
+    private final List<ParameterizedDeserializer> parameterizedDeserializers
+            = new ArrayList<>();
 
     private final Locale defaultLocale;
     private final Map<LocalizedPattern, DateTimeFormatter> dateTimeFormatters = new HashMap<>();
@@ -98,9 +98,9 @@ public class Deserializer implements DeserializationContext {
         deserializers.put(LocalDateTime.class, LocalDateTimeDeserializer.INSTANCE);
         deserializers.put(LocalDate.class, LocalDateDeserializer.INSTANCE);
         deserializers.put(LocalTime.class, LocalTimeDeserializer.INSTANCE);
-        parameterizedDeserializers.put(ArrayList.class, ListDeserializer::new);
-        parameterizedDeserializers.put(HashMap.class, MapDeserializer::new);
-        parameterizedDeserializers.put(Optional.class, OptionalDeserializer::new);
+        parameterizedDeserializers.add(new ParameterizedDeserializer(ArrayList.class, ListDeserializer::new));
+        parameterizedDeserializers.add(new ParameterizedDeserializer(HashMap.class, MapDeserializer::new));
+        parameterizedDeserializers.add(new ParameterizedDeserializer(Optional.class, OptionalDeserializer::new));
     }
 
     private void initializeAdapters(final JsonbConfig config)
@@ -144,9 +144,9 @@ public class Deserializer implements DeserializationContext {
         }
         else if (runtimeType instanceof ParameterizedType parameterizedType) {
             if (parameterizedType.getRawType() instanceof Class<?> clazz) {
-                for (var entry : parameterizedDeserializers.entrySet()) {
-                    if (clazz.isAssignableFrom(entry.getKey())) {
-                        return entry.getValue()
+                for (var entry : parameterizedDeserializers) {
+                    if (clazz.isAssignableFrom(entry.clazz())) {
+                        return entry.factory()
                                     .apply(parameterizedType.getActualTypeArguments());
                     }
                 }
