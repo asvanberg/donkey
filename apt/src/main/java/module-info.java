@@ -9,6 +9,7 @@ module io.github.asvanberg.donkey.apt {
             io.github.asvanberg.donkey.apt.CheckJsonbPropertyValue,
             io.github.asvanberg.donkey.apt.CheckJsonbCreatorParameters,
             io.github.asvanberg.donkey.apt.CheckRecordCanonicalConstructorParameters,
+            io.github.asvanberg.donkey.apt.JsonbDeserializerGenerator,
             io.github.asvanberg.donkey.apt.JsonbSerializerGenerator;
 
     exports io.github.asvanberg.donkey.apt;

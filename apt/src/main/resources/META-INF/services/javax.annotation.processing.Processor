@@ -2,3 +2,4 @@ io.github.asvanberg.donkey.apt.JsonbSerializerGenerator
 io.github.asvanberg.donkey.apt.CheckJsonbPropertyValue
 io.github.asvanberg.donkey.apt.CheckJsonbCreatorParameters
 io.github.asvanberg.donkey.apt.CheckRecordCanonicalConstructorParameters
+io.github.asvanberg.donkey.apt.JsonbDeserializerGenerator
