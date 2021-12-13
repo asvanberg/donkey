@@ -61,6 +61,24 @@ public class Deserializer implements DeserializationContext {
                                    .map(Locale.class::cast)
                                    .orElseGet(Locale::getDefault);
         initializeAdapters(config);
+        initializeDeserializers(config);
+    }
+
+    private void initializeDeserializers(final JsonbConfig config)
+    {
+        registerBuiltInDeserializers();
+        final JsonbDeserializer<?>[] providedDeserializers
+                = config.getProperty(JsonbConfig.DESERIALIZERS)
+                        .map(s -> (JsonbDeserializer<?>[]) s)
+                        .orElse(new JsonbDeserializer[0]);
+        for (JsonbDeserializer<?> providedDeserializer : providedDeserializers) {
+            Util.getFirstTypeArgumentForInterface(providedDeserializer, JsonbDeserializer.class)
+                .ifPresent(handledType -> deserializers.put(handledType, providedDeserializer));
+        }
+    }
+
+    private void registerBuiltInDeserializers()
+    {
         deserializers.put(Integer.class, IntDeserializer.INSTANCE);
         deserializers.put(int.class, IntDeserializer.INSTANCE);
         deserializers.put(Float.class, FloatDeserializer.INSTANCE);

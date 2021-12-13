@@ -55,8 +55,8 @@ public class Serializers implements SerializationContext
                                                                .orElse(new JsonbSerializer[0]);
         for (JsonbSerializer<?> providedSerializer : providedSerializers)
         {
-            getFirstTypeArgumentForInterface(providedSerializer, JsonbSerializer.class)
-                    .ifPresent(handledType -> serializers.put(handledType, providedSerializer));
+            Util.getFirstTypeArgumentForInterface(providedSerializer, JsonbSerializer.class)
+                .ifPresent(handledType -> serializers.put(handledType, providedSerializer));
         }
     }
 
@@ -86,19 +86,6 @@ public class Serializers implements SerializationContext
         serializers.put(TemporalAccessorProperty.class, new TemporalAccessorSerializer(locale));
     }
 
-    private static Optional<Class<?>> getFirstTypeArgumentForInterface(
-            final Object object,
-            final Class<?> interfaceClass)
-    {
-        return Util.getParameterizedType(object, interfaceClass)
-                   // JsonbDeserializer only has one argument
-                   // JsonbSerializer only has one argument
-                   // JsonbAdapter we only care about the source (first argument)
-                   .map(pt -> pt.getActualTypeArguments()[0])
-                   .filter(Class.class::isInstance)
-                   .map(Class.class::cast);
-    }
-
     private void initializeAdapters(final JsonbConfig config)
     {
         adapters.put(URI.class, URIStringJsonbAdapter.INSTANCE);
@@ -108,8 +95,8 @@ public class Serializers implements SerializationContext
                         .map(s -> (JsonbAdapter<?, ?>[]) s)
                         .orElse(new JsonbAdapter[0]);
         for (JsonbAdapter<?, ?> providedAdapter : providedAdapters) {
-            getFirstTypeArgumentForInterface(providedAdapter, JsonbAdapter.class)
-                    .ifPresent(clazz -> adapters.put(clazz, providedAdapter));
+            Util.getFirstTypeArgumentForInterface(providedAdapter, JsonbAdapter.class)
+                .ifPresent(clazz -> adapters.put(clazz, providedAdapter));
         }
     }
 

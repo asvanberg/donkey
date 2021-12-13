@@ -37,4 +37,15 @@ public class Util
             throw new AdaptingFailedException(e);
         }
     }
+
+    @SuppressWarnings("unchecked")
+    public static Optional<Class<?>> getFirstTypeArgumentForInterface(
+            final Object object,
+            final Class<?> interfaceClass)
+    {
+        return getParameterizedType(object, interfaceClass)
+                   .map(pt -> pt.getActualTypeArguments()[0])
+                   .filter(Class.class::isInstance)
+                   .map(Class.class::cast);
+    }
 }
