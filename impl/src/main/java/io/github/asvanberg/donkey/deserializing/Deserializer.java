@@ -1,7 +1,6 @@
 package io.github.asvanberg.donkey.deserializing;
 
 import io.github.asvanberg.donkey.exceptions.AdaptingFailedException;
-import io.github.asvanberg.donkey.internal.NullAdapter;
 import io.github.asvanberg.donkey.internal.URIStringJsonbAdapter;
 import io.github.asvanberg.donkey.internal.UUIDStringJsonbAdapter;
 import io.github.asvanberg.donkey.internal.Util;
@@ -39,8 +38,16 @@ import java.util.UUID;
 public class Deserializer implements DeserializationContext {
     private final Map<Class<?>, JsonbDeserializer<?>> deserializers
             = new HashMap<>();
+    private final Map<Type, JsonbDeserializer<?>> userDeserializers
+            = new HashMap<>();
     private final List<ParameterizedDeserializer> parameterizedDeserializers
             = new ArrayList<>();
+    /**
+     * Resolved deserializers are the complete package including any necessary adapting.
+     * They are stored here for performance reasons instead of doing the lookup every
+     * deserialization request.
+     */
+    private final Map<Type, JsonbDeserializer<?>> resolved = new HashMap<>();
 
     private final Locale defaultLocale;
     private final Map<LocalizedPattern, DateTimeFormatter> dateTimeFormatters = new HashMap<>();
@@ -73,7 +80,7 @@ public class Deserializer implements DeserializationContext {
                         .orElse(new JsonbDeserializer[0]);
         for (JsonbDeserializer<?> providedDeserializer : providedDeserializers) {
             Util.getFirstTypeArgumentForInterface(providedDeserializer, JsonbDeserializer.class)
-                .ifPresent(handledType -> deserializers.put(handledType, providedDeserializer));
+                .ifPresent(handledType -> userDeserializers.put(handledType, providedDeserializer));
         }
     }
 
@@ -132,15 +139,43 @@ public class Deserializer implements DeserializationContext {
                    LocalDateTime.class, LocalDateTime::from,
                    OffsetDateTime.class, OffsetDateTime::from);
 
+    private JsonbDeserializer<?> getResolved(Type type) {
+        // can not use computeIfAbsent due to the recursive nature of the resolve(Type) method
+        JsonbDeserializer<?> deserializer = resolved.get(type);
+        if (deserializer != null) {
+            return deserializer;
+        }
+        JsonbDeserializer<?> resolvedDeserializer = resolve(type);
+        resolved.put(type, resolvedDeserializer);
+        return resolvedDeserializer;
+    }
+
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private JsonbDeserializer<?> getUncheckedJsonbDeserializer(
+    private JsonbDeserializer<?> resolve(
             final Type runtimeType)
     {
+        // 1. Check user provided deserializer
+        JsonbDeserializer<?> deserializer = userDeserializers.get(runtimeType);
+        if (deserializer != null) {
+            return deserializer;
+        }
+        // 2. Check user provided adapter
+        Adapter adapter = adapters.computeIfAbsent(runtimeType, this::getAdapter);
+        if (adapter != null) {
+            JsonbDeserializer<?> adapted = getResolved(adapter.adaptedType());
+            JsonbAdapter<Object, Object> jsonbAdapter = (JsonbAdapter<Object, Object>) adapter.jsonbAdapter();
+            return new AdaptedJsonbDeserializer(adapted, jsonbAdapter, adapter.adaptedType());
+        }
+        // 3. Check known handled types
         if (runtimeType instanceof Class<?> clazz) {
             if (Enum.class.isAssignableFrom(clazz)) {
                 return new EnumDeserializer(clazz);
             }
-            return deserializers.computeIfAbsent(clazz, ObjectDeserializer::of);
+            JsonbDeserializer<?> known = deserializers.get(clazz);
+            if (known != null) {
+                return known;
+            }
+            return ObjectDeserializer.of(clazz);
         }
         else if (runtimeType instanceof ParameterizedType parameterizedType) {
             if (parameterizedType.getRawType() instanceof Class<?> clazz) {
@@ -178,20 +213,9 @@ public class Deserializer implements DeserializationContext {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T deserialize(final Type type, final JsonParser parser) {
-        final Adapter adapter = adapters.computeIfAbsent(type, this::getAdapter);
-        if (adapter.jsonbAdapter() == NullAdapter.INSTANCE) {
-            final JsonbDeserializer<?> jsonbDeserializer
-                    = getUncheckedJsonbDeserializer(type);
-            return (T) jsonbDeserializer.deserialize(parser, this, type);
-        }
-        final Object adapted = deserialize(adapter.adaptedType(), parser);
-        try {
-            final JsonbAdapter<T, Object> jsonbAdapter
-                    = (JsonbAdapter<T, Object>) adapter.jsonbAdapter();
-            return jsonbAdapter.adaptFromJson(adapted);
-        } catch (Exception e) {
-            throw new AdaptingFailedException(e);
-        }
+        final JsonbDeserializer<?> jsonbDeserializer
+                = getResolved(type);
+        return (T) jsonbDeserializer.deserialize(parser, this, type);
     }
 
     private Adapter getAdapter(final Type type)
@@ -208,7 +232,7 @@ public class Deserializer implements DeserializationContext {
             return new Adapter(actualTypeArguments[1], jsonbAdapter);
         }
         else {
-            return new Adapter(type, NullAdapter.INSTANCE);
+            return null;
         }
     }
 }
