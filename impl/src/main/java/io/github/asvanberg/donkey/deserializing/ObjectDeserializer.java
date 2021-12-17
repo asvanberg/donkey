@@ -2,6 +2,7 @@ package io.github.asvanberg.donkey.deserializing;
 
 import io.github.asvanberg.donkey.exceptions.MissingPropertyInJsonException;
 import jakarta.json.bind.serializer.DeserializationContext;
+import jakarta.json.bind.serializer.JsonbDeserializer;
 import jakarta.json.stream.JsonParser;
 
 import java.lang.reflect.ParameterizedType;
@@ -17,7 +18,14 @@ class ObjectDeserializer<T> extends NullableDeserializer<T> {
 
     private final Creator<T> creator;
 
-    static <T> ObjectDeserializer<T> of(Class<T> clazz) {
+    @SuppressWarnings("unchecked")
+    static <T> JsonbDeserializer<T> of(Class<T> clazz) {
+        // check if there's an apt generated serializer
+        try {
+            final String deserializerClassName = clazz.getName() + "$donkey$apt$deserializer";
+            return (JsonbDeserializer<T>) Class.forName(deserializerClassName)
+                                                    .getConstructor().newInstance();
+        } catch (Exception ignored) {}
         return new ObjectDeserializer<>(Creator.forClass(clazz));
     }
 
