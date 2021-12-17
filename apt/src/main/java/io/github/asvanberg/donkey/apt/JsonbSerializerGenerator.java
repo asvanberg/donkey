@@ -25,7 +25,6 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,7 +35,6 @@ import java.util.Set;
  */
 public final class JsonbSerializerGenerator extends AbstractProcessor
 {
-    private final Collection<ClassMetadata> classes = new ArrayList<>();
     private final Set<TypeElement> seen = new HashSet<>();
 
     @Override
@@ -57,18 +55,9 @@ public final class JsonbSerializerGenerator extends AbstractProcessor
             final RoundEnvironment roundEnv)
     {
         if (roundEnv.processingOver()) {
-            try {
-                generateSerializers(classes);
-            }
-            catch (IOException e) {
-                var stackTrace = new StringWriter();
-                e.printStackTrace(new PrintWriter(stackTrace));
-                processingEnv.getMessager().printMessage(
-                        Diagnostic.Kind.ERROR,
-                        e.getMessage() + "\n" + stackTrace);
-            }
+            return false;
         }
-        else {
+        try {
             var methods = ElementFilter.methodsIn(
                     roundEnv.getElementsAnnotatedWith(JsonbProperty.class));
             for (ExecutableElement method : methods) {
@@ -77,11 +66,18 @@ public final class JsonbSerializerGenerator extends AbstractProcessor
                     case CLASS, RECORD -> {
                         final TypeElement typeElement = (TypeElement) e;
                         if (seen.add(typeElement)) {
-                            classes.add(analyze(typeElement));
+                            generateSerializer(analyze(typeElement));
                         }
                     }
                 }
             }
+        }
+        catch (IOException e) {
+            var stackTrace = new StringWriter();
+            e.printStackTrace(new PrintWriter(stackTrace));
+            processingEnv.getMessager().printMessage(
+                    Diagnostic.Kind.ERROR,
+                    e.getMessage() + "\n" + stackTrace);
         }
         return false;
     }
@@ -102,24 +98,22 @@ public final class JsonbSerializerGenerator extends AbstractProcessor
         return new ClassMetadata(typeElement, properties);
     }
 
-    private void generateSerializers(final Collection<ClassMetadata> classes)
+    private void generateSerializer(ClassMetadata classMetadata)
             throws IOException
     {
         final Filer filer = processingEnv.getFiler();
-        for (ClassMetadata classMetadata : classes) {
-            final String serializerClassName
-                    = classMetadata.typeElement().getSimpleName() + "$donkey$apt$serializer";
-            final PackageElement packageElement
-                    = processingEnv.getElementUtils().getPackageOf(classMetadata.typeElement());
-            final String serializerFQN
-                    = packageElement.getQualifiedName() + "." + serializerClassName;
-            final JavaFileObject sourceFile
-                    = filer.createSourceFile(serializerFQN, classMetadata.typeElement());
-            try (var os = new OutputStreamWriter(sourceFile.openOutputStream(),
-                                                 StandardCharsets.UTF_8))
-            {
-                os.write(serializerSource(classMetadata, packageElement, serializerClassName));
-            }
+        final String serializerClassName
+                = classMetadata.typeElement().getSimpleName() + "$donkey$apt$serializer";
+        final PackageElement packageElement
+                = processingEnv.getElementUtils().getPackageOf(classMetadata.typeElement());
+        final String serializerFQN
+                = packageElement.getQualifiedName() + "." + serializerClassName;
+        final JavaFileObject sourceFile
+                = filer.createSourceFile(serializerFQN, classMetadata.typeElement());
+        try (var os = new OutputStreamWriter(sourceFile.openOutputStream(),
+                                             StandardCharsets.UTF_8))
+        {
+            os.write(serializerSource(classMetadata, packageElement, serializerClassName));
         }
     }
 
@@ -230,15 +224,21 @@ public final class JsonbSerializerGenerator extends AbstractProcessor
                        .append("();\n");
             }
             else if (isTemporalAccessor && jsonbDateFormat != null) {
-                methodBody.append("ctx.serialize(\"")
-                          .append(property.name())
-                          .append("\", new io.github.asvanberg.donkey.serializing.TemporalAccessorProperty(\"")
-                          .append(jsonbDateFormat.value())
-                          .append("\", \"")
-                          .append(jsonbDateFormat.locale())
-                          .append("\", obj.")
-                          .append(methodName)
-                          .append("()), generator);\n");
+                if (JsonbDateFormat.TIME_IN_MILLIS.equals(jsonbDateFormat.value())) {
+                    appendSerializeProperty(methodBody,
+                                            methodName + "().toEpochMilli",
+                                            property.name());
+                }
+                else {
+                    statics.append(buildDateTimeFormatter(jsonbDateFormat, methodName));
+                    methodBody.append("ctx.serialize(\"")
+                              .append(property.name())
+                              .append("\", ARG_")
+                              .append(methodName)
+                              .append("_FORMAT.format(obj.")
+                              .append(methodName)
+                              .append("()), generator);\n");
+                }
             }
             else {
                 appendSerializeProperty(methodBody, methodName, property.name());
@@ -247,6 +247,21 @@ public final class JsonbSerializerGenerator extends AbstractProcessor
             if (!property.nillable()) {
                 methodBody.append("}\n");
             }
+        }
+    }
+
+    private String buildDateTimeFormatter(JsonbDateFormat jsonbDateFormat, CharSequence arg) {
+        if (jsonbDateFormat.locale().equals(JsonbDateFormat.DEFAULT_LOCALE)) {
+            return """
+                    private static final java.time.format.DateTimeFormatter ARG_%s_FORMAT
+                         = java.time.format.DateTimeFormatter.ofPattern("%s");
+                    """.formatted(arg, jsonbDateFormat.value());
+        }
+        else {
+            return """
+                    private static final java.time.format.DateTimeFormatter ARG_%s_FORMAT
+                         = java.time.format.DateTimeFormatter.ofPattern("%s", java.util.Locale.forLanguageTag("%s"));
+                    """.formatted(arg, jsonbDateFormat.value(), jsonbDateFormat.locale());
         }
     }
 
@@ -261,7 +276,7 @@ public final class JsonbSerializerGenerator extends AbstractProcessor
 
     private void appendSerializeProperty(
             final StringBuilder stringBuilder,
-            final Name methodName,
+            final CharSequence methodName,
             final String propertyName)
     {
         stringBuilder.append("ctx.serialize(\"")
