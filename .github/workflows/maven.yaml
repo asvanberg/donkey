@@ -21,4 +21,4 @@ jobs:
         run: mvn -B clean verify -P coverage --no-transfer-progress --file pom.xml
       - uses: codecov/codecov-action@v2
         with:
-          files: ./impl/target/site/jacoco/jacoco.xml
+          files: apt/target/site/jacoco/jacoco.xml,impl/target/site/jacoco/jacoco.xml
