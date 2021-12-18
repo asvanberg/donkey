@@ -105,22 +105,26 @@ public class Serializers implements SerializationContext
     {
         if (object != null) {
             final Class<?> clazz = object.getClass();
-            final JsonbAdapter<T, ?> jsonbAdapter
-                    = (JsonbAdapter<T, ?>) adapters.computeIfAbsent(clazz, this::getAdapter);
-            final Object adapted;
-            try {
-                adapted = jsonbAdapter.adaptToJson(object);
-            }
-            catch (Exception e) {
-                throw new AdaptingFailedException(e);
+            JsonbAdapter<T, ?> jsonbAdapter
+                    = (JsonbAdapter<T, ?>) adapters.get(clazz);
+            if (jsonbAdapter == null) {
+                jsonbAdapter = (JsonbAdapter<T, ?>) getAdapter(clazz);
+                adapters.put(clazz, jsonbAdapter);
             }
             if (jsonbAdapter != NullAdapter.INSTANCE) {
+                final Object adapted;
+                try {
+                    adapted = jsonbAdapter.adaptToJson(object);
+                }
+                catch (Exception e) {
+                    throw new AdaptingFailedException(e);
+                }
                 serialize(adapted, generator);
             }
             else {
                 final JsonbSerializer<Object> serializer
-                        = (JsonbSerializer<Object>) getJsonbSerializer(adapted.getClass());
-                serializer.serialize(adapted, generator, this);
+                        = (JsonbSerializer<Object>) getJsonbSerializer(object.getClass());
+                serializer.serialize(object, generator, this);
             }
         }
         else {

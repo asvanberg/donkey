@@ -12,7 +12,9 @@ public enum CollectionSerializer implements JsonbSerializer<Collection<?>> {
     @Override
     public void serialize(final Collection<?> obj, final JsonGenerator generator, final SerializationContext ctx) {
         generator.writeStartArray();
-        obj.forEach(o -> ctx.serialize(o, generator));
+        for (Object o : obj) {
+            ctx.serialize(o, generator);
+        }
         generator.writeEnd();
     }
 }
