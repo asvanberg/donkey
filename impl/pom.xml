@@ -38,10 +38,10 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.json</artifactId>
+            <groupId>org.eclipse.parsson</groupId>
+            <artifactId>parsson</artifactId>
+            <version>1.0.0</version>
             <scope>test</scope>
-            <classifier>module</classifier>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
