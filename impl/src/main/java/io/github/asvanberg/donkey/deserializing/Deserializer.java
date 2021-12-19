@@ -25,6 +25,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalQuery;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -108,6 +109,7 @@ public class Deserializer implements DeserializationContext {
         parameterizedDeserializers.add(new ParameterizedDeserializer(ArrayList.class, ListDeserializer::new));
         parameterizedDeserializers.add(new ParameterizedDeserializer(HashMap.class, MapDeserializer::new));
         parameterizedDeserializers.add(new ParameterizedDeserializer(Optional.class, OptionalDeserializer::new));
+        parameterizedDeserializers.add(new ParameterizedDeserializer(HashSet.class, SetDeserializer::of));
     }
 
     private void initializeAdapters(final JsonbConfig config)
