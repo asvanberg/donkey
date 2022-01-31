@@ -41,12 +41,12 @@ Non-modular apps requires no extra configuration besides adding the provided dep
   <dependency>
     <groupId>io.github.asvanberg</groupId>
     <artifactId>donkey</artifactId>
-    <version>1.3.0</version>
+    <version>1.4.0</version>
   </dependency>
   <dependency>
     <groupId>io.github.asvanberg</groupId>
     <artifactId>donkey-apt</artifactId>
-    <version>1.3.0</version>
+    <version>1.4.0</version>
     <scope>provided</scope>
   </dependency>
 </dependencies>
@@ -76,7 +76,7 @@ and all parameters must be annotated with `@JsonbProperty` and have an explicit 
   * Primitives (and wrappers)
   * `String`
   * `java.time.{Instant, LocalDate, LocalTime, LocalDateTime, OffsetDateTime}` (using their respective ISO formats)
-  * `List<E>` and `Collection<E>`
+  * `List<E>`, `Set<E>`, and `Collection<E>`
   * `Map<String, E>`
   * `Optional` (and primitive specializations)
   * Enums
@@ -89,8 +89,8 @@ and all parameters must be annotated with `@JsonbProperty` and have an explicit 
 * Locale configuration which is relevant for certain date formats
 
 ## Benchmark
-Using Donkey 1.3.0 (with annotation processing) and Yasson 2.0.2.
-![Benchmark comparing Donkey and Yasson](benchmark/donkey-1.3.0-yasson-2.0.2.png)
+Using Donkey 1.4.0 (with annotation processing) and Yasson 2.0.4.
+![Benchmark comparing Donkey and Yasson](benchmark/donkey-1.4.0-yasson-2.0.4.png)
 
 ### Running the benchmark
 ```

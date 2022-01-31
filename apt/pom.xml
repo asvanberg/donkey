@@ -7,7 +7,7 @@
     <parent>
         <artifactId>donkey-parent</artifactId>
         <groupId>io.github.asvanberg</groupId>
-        <version>1.4.0-SNAPSHOT</version>
+        <version>1.4.0</version>
     </parent>
 
     <artifactId>donkey-apt</artifactId>

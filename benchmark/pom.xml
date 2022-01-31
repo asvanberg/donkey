@@ -25,18 +25,18 @@
         <dependency>
             <groupId>io.github.asvanberg</groupId>
             <artifactId>donkey</artifactId>
-            <version>1.4.0-SNAPSHOT</version>
+            <version>1.4.0</version>
         </dependency>
         <dependency>
             <groupId>io.github.asvanberg</groupId>
             <artifactId>donkey-apt</artifactId>
-            <version>1.4.0-SNAPSHOT</version>
+            <version>1.4.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse</groupId>
             <artifactId>yasson</artifactId>
-            <version>2.0.2</version>
+            <version>2.0.4</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.glassfish</groupId>
@@ -53,7 +53,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <jmh.version>1.33</jmh.version>
+        <jmh.version>1.34</jmh.version>
         <uberjar.name>benchmarks</uberjar.name>
     </properties>
 
