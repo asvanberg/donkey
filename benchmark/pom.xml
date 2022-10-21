@@ -25,12 +25,12 @@
         <dependency>
             <groupId>io.github.asvanberg</groupId>
             <artifactId>donkey</artifactId>
-            <version>1.4.0</version>
+            <version>2.0.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>io.github.asvanberg</groupId>
             <artifactId>donkey-apt</artifactId>
-            <version>1.4.0</version>
+            <version>2.0.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
