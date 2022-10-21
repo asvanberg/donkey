@@ -15,6 +15,7 @@ import jakarta.json.stream.JsonParser;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigInteger;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -106,6 +107,7 @@ public class Deserializer implements DeserializationContext {
         deserializers.put(LocalDateTime.class, LocalDateTimeDeserializer.INSTANCE);
         deserializers.put(LocalDate.class, LocalDateDeserializer.INSTANCE);
         deserializers.put(LocalTime.class, LocalTimeDeserializer.INSTANCE);
+        deserializers.put(BigInteger.class, BigIntegerDeserializer.INSTANCE);
         parameterizedDeserializers.add(new ParameterizedDeserializer(ArrayList.class, ListDeserializer::new));
         parameterizedDeserializers.add(new ParameterizedDeserializer(HashMap.class, MapDeserializer::new));
         parameterizedDeserializers.add(new ParameterizedDeserializer(Optional.class, OptionalDeserializer::new));
