@@ -1,14 +1,20 @@
-package io.github.asvanberg.donkey.deserializing;
+package io.github.asvanberg.donkey.codecs;
 
 import io.github.asvanberg.donkey.exceptions.UnexpectedParserPositionException;
 import jakarta.json.bind.serializer.DeserializationContext;
-import jakarta.json.bind.serializer.JsonbDeserializer;
+import jakarta.json.bind.serializer.SerializationContext;
+import jakarta.json.stream.JsonGenerator;
 import jakarta.json.stream.JsonParser;
 
 import java.lang.reflect.Type;
 
-enum BooleanDeserializer implements JsonbDeserializer<Boolean> {
+public enum BooleanCodec implements JsonbCodec<Boolean> {
     INSTANCE;
+
+    @Override
+    public void serialize(final Boolean obj, final JsonGenerator generator, final SerializationContext ctx) {
+        generator.write(obj);
+    }
 
     @Override
     public Boolean deserialize(

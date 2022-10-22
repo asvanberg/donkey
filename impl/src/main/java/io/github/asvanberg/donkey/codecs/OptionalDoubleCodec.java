@@ -1,15 +1,26 @@
-package io.github.asvanberg.donkey.deserializing;
+package io.github.asvanberg.donkey.codecs;
 
 import io.github.asvanberg.donkey.exceptions.UnexpectedParserPositionException;
 import jakarta.json.bind.serializer.DeserializationContext;
-import jakarta.json.bind.serializer.JsonbDeserializer;
+import jakarta.json.bind.serializer.SerializationContext;
+import jakarta.json.stream.JsonGenerator;
 import jakarta.json.stream.JsonParser;
 
 import java.lang.reflect.Type;
 import java.util.OptionalDouble;
 
-enum OptionalDoubleDeserializer implements JsonbDeserializer<OptionalDouble> {
+public enum OptionalDoubleCodec implements JsonbCodec<OptionalDouble> {
     INSTANCE;
+
+    @Override
+    public void serialize(final OptionalDouble obj, final JsonGenerator generator, final SerializationContext ctx) {
+        if (obj.isPresent()) {
+            generator.write(obj.getAsDouble());
+        }
+        else {
+            generator.writeNull();
+        }
+    }
 
     @Override
     public final OptionalDouble deserialize(

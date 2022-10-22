@@ -1,14 +1,22 @@
-package io.github.asvanberg.donkey.deserializing;
+package io.github.asvanberg.donkey.codecs;
 
 import jakarta.json.bind.serializer.DeserializationContext;
-import jakarta.json.bind.serializer.JsonbDeserializer;
+import jakarta.json.bind.serializer.SerializationContext;
+import jakarta.json.stream.JsonGenerator;
 import jakarta.json.stream.JsonParser;
 
 import java.lang.reflect.Type;
 import java.time.LocalDate;
 
-enum LocalDateDeserializer implements JsonbDeserializer<LocalDate> {
+public enum LocalDateCodec implements JsonbCodec<LocalDate> {
     INSTANCE;
+
+    @Override
+    public void serialize(
+            final LocalDate obj, final JsonGenerator generator, final SerializationContext ctx)
+    {
+        generator.write(obj.toString());
+    }
 
     @Override
     public LocalDate deserialize(

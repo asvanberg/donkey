@@ -1,4 +1,4 @@
-package io.github.asvanberg.donkey.serializing;
+package io.github.asvanberg.donkey.codecs;
 
 import jakarta.json.JsonValue;
 import jakarta.json.bind.serializer.JsonbSerializer;

@@ -1,15 +1,26 @@
-package io.github.asvanberg.donkey.deserializing;
+package io.github.asvanberg.donkey.codecs;
 
 import io.github.asvanberg.donkey.exceptions.UnexpectedParserPositionException;
 import jakarta.json.bind.serializer.DeserializationContext;
-import jakarta.json.bind.serializer.JsonbDeserializer;
+import jakarta.json.bind.serializer.SerializationContext;
+import jakarta.json.stream.JsonGenerator;
 import jakarta.json.stream.JsonParser;
 
 import java.lang.reflect.Type;
 import java.util.OptionalLong;
 
-enum OptionalLongDeserializer implements JsonbDeserializer<OptionalLong> {
+public enum OptionalLongCodec implements JsonbCodec<OptionalLong> {
     INSTANCE;
+
+    @Override
+    public void serialize(final OptionalLong obj, final JsonGenerator generator, final SerializationContext ctx) {
+        if (obj.isPresent()) {
+            generator.write(obj.getAsLong());
+        }
+        else {
+            generator.writeNull();
+        }
+    }
 
     @Override
     public final OptionalLong deserialize(

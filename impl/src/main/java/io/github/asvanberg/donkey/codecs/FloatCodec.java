@@ -1,13 +1,21 @@
-package io.github.asvanberg.donkey.deserializing;
+package io.github.asvanberg.donkey.codecs;
 
 import jakarta.json.bind.serializer.DeserializationContext;
-import jakarta.json.bind.serializer.JsonbDeserializer;
+import jakarta.json.bind.serializer.SerializationContext;
+import jakarta.json.stream.JsonGenerator;
 import jakarta.json.stream.JsonParser;
 
 import java.lang.reflect.Type;
 
-enum FloatDeserializer implements JsonbDeserializer<Float> {
+public enum FloatCodec implements JsonbCodec<Float> {
     INSTANCE;
+
+    @Override
+    public void serialize(
+            final Float obj, final JsonGenerator generator, final SerializationContext ctx)
+    {
+        generator.write(obj);
+    }
 
     @Override
     public Float deserialize(
