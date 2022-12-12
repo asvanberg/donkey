@@ -1,5 +1,6 @@
 package io.github.asvanberg.donkey.deserializing;
 
+import io.github.asvanberg.donkey.codecs.BigDecimalCodec;
 import io.github.asvanberg.donkey.exceptions.AdaptingFailedException;
 import io.github.asvanberg.donkey.internal.URIStringJsonbAdapter;
 import io.github.asvanberg.donkey.internal.UUIDStringJsonbAdapter;
@@ -30,6 +31,7 @@ import jakarta.json.stream.JsonParser;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.time.Instant;
@@ -123,6 +125,7 @@ public class Deserializer implements DeserializationContext {
         deserializers.put(LocalDate.class, LocalDateCodec.INSTANCE);
         deserializers.put(LocalTime.class, LocalTimeCodec.INSTANCE);
         deserializers.put(BigInteger.class, BigIntegerCodec.INSTANCE);
+        deserializers.put(BigDecimal.class, BigDecimalCodec.INSTANCE);
         parameterizedDeserializers.add(new ParameterizedDeserializer(ArrayList.class, ListDeserializer::new));
         parameterizedDeserializers.add(new ParameterizedDeserializer(HashMap.class, MapDeserializer::new));
         parameterizedDeserializers.add(new ParameterizedDeserializer(Optional.class, OptionalDeserializer::new));
