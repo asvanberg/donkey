@@ -1,8 +1,11 @@
 package io.github.asvanberg.donkey.test;
 
 import io.github.asvanberg.donkey.exceptions.UnexpectedParserPositionException;
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -61,6 +64,59 @@ public class SimpleTypesDeserializationTest extends DefaultConfigurationTest
                 """;
 
         assertThatThrownBy(() -> jsonb.fromJson(json, BigInteger.class))
+                .isInstanceOf(UnexpectedParserPositionException.class);
+    }
+
+    @Property
+    public void big_decimal_from_number_scientific(@ForAll BigDecimal wanted)
+    {
+        String json = wanted.toString();
+
+        BigDecimal actual = jsonb.fromJson(json, BigDecimal.class);
+        assertThat(actual)
+                .isEqualTo(wanted);
+    }
+
+
+    @Property
+    public void big_decimal_from_number_plain(@ForAll BigDecimal wanted)
+    {
+        String json = wanted.toPlainString();
+
+        BigDecimal actual = jsonb.fromJson(json, BigDecimal.class);
+        assertThat(actual)
+                .isEqualTo(wanted);
+    }
+
+
+    @Property
+    public void big_decimal_from_string_scientific(@ForAll BigDecimal wanted)
+    {
+        String json = "\"" + wanted.toString() + "\"";
+
+        BigDecimal actual = jsonb.fromJson(json, BigDecimal.class);
+        assertThat(actual)
+                .isEqualTo(wanted);
+    }
+
+    @Property
+    public void big_decimal_from_string_plain(@ForAll BigDecimal wanted)
+    {
+        String json = "\"" + wanted.toPlainString() + "\"";
+
+        BigDecimal actual = jsonb.fromJson(json, BigDecimal.class);
+        assertThat(actual)
+                .isEqualTo(wanted);
+    }
+
+    @Test
+    public void big_decimal_fails_for_object_type()
+    {
+        String json = """
+                {}
+                """;
+
+        assertThatThrownBy(() -> jsonb.fromJson(json, BigDecimal.class))
                 .isInstanceOf(UnexpectedParserPositionException.class);
     }
 }

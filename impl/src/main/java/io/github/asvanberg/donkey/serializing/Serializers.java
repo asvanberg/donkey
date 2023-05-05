@@ -5,7 +5,7 @@ import io.github.asvanberg.donkey.internal.NullAdapter;
 import io.github.asvanberg.donkey.internal.URIStringJsonbAdapter;
 import io.github.asvanberg.donkey.internal.UUIDStringJsonbAdapter;
 import io.github.asvanberg.donkey.internal.Util;
-import io.github.asvanberg.donkey.codecs.BigDecimalSerializer;
+import io.github.asvanberg.donkey.codecs.BigDecimalCodec;
 import io.github.asvanberg.donkey.codecs.BigIntegerCodec;
 import io.github.asvanberg.donkey.codecs.BooleanCodec;
 import io.github.asvanberg.donkey.codecs.DoubleCodec;
@@ -81,7 +81,7 @@ public class Serializers implements SerializationContext
     {
         serializers.put(String.class, StringCodec.INSTANCE);
         serializers.put(Integer.class, IntegerCodec.INSTANCE);
-        serializers.put(BigDecimal.class, BigDecimalSerializer.INSTANCE);
+        serializers.put(BigDecimal.class, BigDecimalCodec.INSTANCE);
         serializers.put(BigInteger.class, BigIntegerCodec.INSTANCE);
         serializers.put(Boolean.class, BooleanCodec.INSTANCE);
         serializers.put(Long.class, LongCodec.INSTANCE);
